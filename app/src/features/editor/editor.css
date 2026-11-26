@@ -1,0 +1,3887 @@
+/*
+ * 块编辑器样式（P1-02）。
+ * 只使用知行全局 design token；没有横贯顶部的固定格式工具栏。
+ */
+
+.zxe {
+  --zxe-read-width: 860px;
+  position: relative;
+  display: flex;
+  min-height: 420px;
+  height: 100%;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+/*
+ * 按钮 reset 只提供兜底，不覆盖各按钮自己的外观。
+ * 用 :where() 把特异性降到元素级（0,0,1），否则 `.zxe button`（0,1,1）
+ * 会压过 `.zxe-todo-check`（0,1,0），把待办方框的 border/background 清空。
+ */
+:where(.zxe) button {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  color: inherit;
+}
+
+.zxe button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+/*
+ * 纸面即滚动容器：左右至少留出 60px，保证 gutter（left:-46px）完全落在
+ * 页边距里，不会压缩正文或制造横向滚动。正文列本身仍由 read-width 居中。
+ */
+.zxe-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 26px max(60px, calc((100% - var(--zxe-read-width)) / 2)) 76px;
+  scroll-behavior: smooth;
+}
+
+.zxe--focus .zxe-body {
+  padding-inline: max(60px, calc((100% - 760px) / 2));
+}
+
+/*
+ * density.css 用 !important 控制阅读宽度；连续排版必须保证页边距足以
+ * 承载 left:-46px 的 gutter。这里用更高特异性覆盖，不在设置文件里
+ * 引入第二套排版规则。
+ */
+.zxe.zxe--external-rail .zxe-body.zxe-focus-body {
+  padding-inline: max(60px, calc((100% - var(--zxe-read-width)) / 2)) !important;
+}
+
+.zxe.zxe--external-rail.zxe--focus .zxe-body.zxe-focus-body {
+  padding-inline: max(60px, calc((100% - 760px) / 2)) !important;
+}
+
+/*
+ * 专注模式状态条（原独立「打字机」按钮已并入）。
+ * 用勾选框给出可关闭的「写作跟随」，并明确当前是居中还是只保留高亮。
+ */
+.zxe-focusbar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 18px;
+  border-bottom: 1px solid var(--line);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+
+.zxe-focusbar-dot {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.zxe-focusbar-title {
+  font-weight: 650;
+}
+
+.zxe-focusbar-follow {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.zxe-focusbar-follow input {
+  width: 13px;
+  height: 13px;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.zxe-focusbar-hint {
+  color: var(--muted);
+}
+
+.zxe-focusbar-exit {
+  margin-left: auto;
+  height: 24px;
+  padding: 0 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.zxe-focusbar-exit:hover {
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+/* 非当前块轻淡；hover/focus/选中恢复。当前块用左侧竖线，不铺整行背景。 */
+.zxe--focus .zxe-row {
+  opacity: 0.42;
+  transition: opacity var(--motion-fast);
+}
+
+.zxe--focus .zxe-row.is-active,
+.zxe--focus .zxe-row:hover,
+.zxe--focus .zxe-row:focus-within {
+  opacity: 1;
+}
+
+/*
+ * 连续文档流（ZX-NOTE-08 / ZX-DESIGN-09）：
+ * 行容器默认完全透明，没有边框、圆角、内缩；正文左基线就是内容容器左边。
+ * 行级反馈只保留左侧 2px 竖线，不做整块卡片背景。
+ */
+.zxe-row {
+  position: relative;
+  display: block;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.zxe-row::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  left: -14px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--motion-fast);
+}
+
+.zxe-row:hover::before {
+  opacity: 0.35;
+}
+
+.zxe-row:focus-within::before,
+.zxe-row.is-active::before {
+  opacity: 1;
+}
+
+/* 只读/阅读模式没有块操作，也不显示 hover 竖线。 */
+.zxe--readonly .zxe-row::before {
+  display: none;
+}
+
+/* 显式块选择是唯一允许整行淡色的例外（规范 §3.3）。 */
+.zxe-row.is-block-selected,
+.zxe-row.is-block-selected:hover {
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.zxe-row.is-block-selected::before {
+  opacity: 1;
+}
+
+.zxe--focus .zxe-row.is-block-selected {
+  opacity: 1;
+}
+
+/* 块选择态禁用正文原生拖选，避免文字选区和块选区叠加。 */
+.zxe--block-selecting .zxe-inline {
+  user-select: none;
+}
+
+.zxe-row.is-dragging {
+  opacity: 0.45;
+}
+
+/*
+ * 搜索结果定位：左侧竖线 + 内容层的浅色文本背景，1.4s 后褪去；
+ * 不给整行铺卡片背景（N-18 / ZX-DESIGN-09 §3.3）。
+ */
+.zxe-row.is-search-hit::before {
+  background: var(--amber);
+  opacity: 1;
+}
+
+.zxe-row.is-search-hit .zxe-row-content {
+  border-radius: 4px;
+  animation: zxe-search-flash 1.4s ease-out;
+}
+
+@keyframes zxe-search-flash {
+  0% {
+    background: var(--amber-soft);
+    box-shadow: inset 0 -1px var(--amber);
+  }
+  55% {
+    background: color-mix(in srgb, var(--amber-soft) 55%, transparent);
+  }
+  100% {
+    background: transparent;
+    box-shadow: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zxe-row.is-search-hit .zxe-row-content {
+    animation-duration: 0.01ms;
+  }
+
+  .zxe-body {
+    scroll-behavior: auto;
+  }
+
+  .zxe--focus .zxe-row {
+    transition: none;
+  }
+}
+
+@media (max-width: 1024px) {
+  .zxe.zxe--external-rail .zxe-body.zxe-focus-body {
+    padding-inline: max(52px, calc((100% - var(--zxe-read-width)) / 2)) !important;
+  }
+
+  .zxe.zxe--external-rail.zxe--focus .zxe-body.zxe-focus-body {
+    padding-inline: max(52px, calc((100% - 760px) / 2)) !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .zxe-focusbar {
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    padding: 7px 12px;
+  }
+
+  .zxe-focusbar-exit {
+    margin-left: 0;
+  }
+
+  /*
+   * 窄窗：正文左侧只保留 20px 页边，gutter 改为右侧浮层（右侧留 48px
+   * 页边承接 44px 控件），这样左基线不因控件而变化，也没有横向滚动。
+   * 选择入口与拖拽手柄共用同一套 44px gutter，不额外渲染触屏/窄屏副本。
+   */
+  .zxe.zxe--external-rail .zxe-body.zxe-focus-body,
+  .zxe.zxe--external-rail.zxe--focus .zxe-body.zxe-focus-body {
+    padding-inline: 20px 48px !important;
+  }
+
+  .zxe-row::before {
+    left: -10px;
+  }
+
+  .zxe-row .zxe-block-gutter {
+    left: auto;
+    right: -46px;
+    width: 44px;
+    justify-content: flex-end;
+  }
+}
+
+/*
+ * 内容容器只负责用户缩进；默认 0，因此所有文本块与对象块共享同一左基线。
+ * gutter 是绝对定位覆盖层，不参与这里的宽度计算。
+ */
+.zxe-row-content {
+  display: block;
+  min-width: 0;
+  padding-left: calc(var(--zxe-indent, 0) * 20px);
+}
+
+.zxe-row-content.is-textual {
+  display: block;
+}
+
+/*
+ * gutter 覆盖层：绝对定位在内容列左侧外边距，宽 44px，默认完全不可见、
+ * 不接收指针；不参与行内布局，因此不会推动正文或改变换行。
+ */
+.zxe-block-gutter {
+  position: absolute;
+  left: -46px;
+  top: 2px;
+  display: flex;
+  width: 44px;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 2px;
+  padding-top: 2px;
+  opacity: 0;
+  user-select: none;
+  transition: opacity var(--motion-fast);
+}
+
+/* 44px 里固定容纳「选择 18 + 间距 2 + 手柄 24」，窄窗也不压缩。 */
+.zxe-block-gutter > .zxe-block-select,
+.zxe-block-gutter > .zxe-block-control {
+  flex: 0 0 auto;
+}
+
+.zxe-row:hover .zxe-block-gutter,
+.zxe-row:focus-within .zxe-block-gutter,
+.zxe-row.is-block-selected .zxe-block-gutter,
+.zxe--block-selecting .zxe-block-gutter,
+.zxe-block-gutter:focus-within {
+  opacity: 1;
+}
+
+/*
+ * 只有真正支持 hover 的设备才默认 `pointer-events:none`（避免点到透明控件）；
+ * 触屏没有 hover，用 active/focus 浮出。jsdom 不实现 hover 媒体查询，
+ * 单测不会因此点不到控件；真实浏览器几何由 zx-note-08-visual 覆盖。
+ */
+@media (hover: hover) {
+  .zxe-block-gutter {
+    pointer-events: none;
+  }
+
+  .zxe-row:hover .zxe-block-gutter,
+  .zxe-row:focus-within .zxe-block-gutter,
+  .zxe-row.is-block-selected .zxe-block-gutter,
+  .zxe--block-selecting .zxe-block-gutter,
+  .zxe-block-gutter:focus-within {
+    pointer-events: auto;
+  }
+}
+
+/* 触屏没有 hover：当前块获得焦点/激活后才浮出手柄。 */
+@media (hover: none) {
+  .zxe-block-gutter {
+    pointer-events: none;
+  }
+
+  .zxe-row.is-active .zxe-block-gutter,
+  .zxe-row:focus-within .zxe-block-gutter {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+.zxe-block-select {
+  display: grid;
+  width: 18px;
+  height: 18px;
+  margin: 3px 0 0;
+  place-items: center;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--surface);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background var(--motion-fast),
+    border-color var(--motion-fast),
+    color var(--motion-fast);
+}
+
+.zxe-block-select:hover {
+  border-color: var(--accent);
+}
+
+.zxe-block-select[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--surface);
+}
+
+.zxe-block-select:focus-visible {
+  border-color: var(--focus-ring);
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
+.zxe-block-control {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1;
+  cursor: grab;
+  transition:
+    background var(--motion-fast),
+    color var(--motion-fast);
+}
+
+.zxe-row:hover .zxe-block-control,
+.zxe-row:focus-within .zxe-block-control,
+.zxe-block-control:focus-visible {
+  opacity: 1;
+}
+
+.zxe-block-control:hover {
+  background: var(--surface-3);
+  color: var(--ink);
+}
+
+.zxe-block-control.is-empty {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.zxe-block-control:active {
+  cursor: grabbing;
+}
+
+/*
+ * 块序号只在显式块选择态或指针悬停当前行时渲染（ZX6-PROPS-02），
+ * 普通输入/阅读态不出现。绝对定位，不占正文宽度、不推移内容。
+ */
+.zxe-row-index {
+  position: absolute;
+  right: 4px;
+  top: 5px;
+  color: var(--muted);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.zxe-inline {
+  min-height: 1.7em;
+  outline: none;
+  line-height: 1.75;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  caret-color: var(--accent);
+}
+
+.zxe-inline[data-empty='true']::before {
+  content: attr(data-placeholder);
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.zxe-inline[data-empty='true'] br {
+  display: none;
+}
+
+.zxe-inline:empty::after {
+  content: '\200b';
+}
+
+.zxe-paragraph {
+  font-size: 14.5px;
+}
+
+.zxe-heading {
+  margin: 20px 0 6px;
+  font-weight: 650;
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+}
+
+.zxe-heading-1 {
+  margin-top: 22px;
+  margin-bottom: 8px;
+  font-size: 26px;
+}
+
+.zxe-heading-2 {
+  font-size: 22px;
+}
+
+.zxe-heading-3 {
+  margin-top: 16px;
+  margin-bottom: 4px;
+  font-size: 19px;
+}
+
+.zxe-heading-4 {
+  margin-top: 12px;
+  margin-bottom: 2px;
+  font-size: 17px;
+}
+
+.zxe-heading-5 {
+  margin-top: 10px;
+  margin-bottom: 2px;
+  font-size: 15px;
+}
+
+.zxe-row:first-child .zxe-heading {
+  margin-top: 0;
+}
+
+.zxe-inline code,
+.zxe-code-pre code {
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: var(--surface-3);
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+}
+
+.zxe-inline a {
+  color: var(--accent-ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.zxe-inline a[href^='zhixing://note/'] {
+  cursor: pointer;
+}
+
+.zxe-todo {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 2px 0;
+}
+
+.zxe-todo-check {
+  display: grid;
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  min-height: 18px;
+  margin-top: 4px;
+  padding: 0;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1.5px solid var(--muted);
+  border-radius: 5px;
+  background: var(--surface);
+  color: var(--on-accent);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  transition:
+    border-color var(--motion-fast),
+    background var(--motion-fast),
+    box-shadow var(--motion-fast);
+}
+
+.zxe-todo-check:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.zxe-todo-check:focus {
+  outline: 2px solid var(--accent-ink);
+  outline-offset: 2px;
+}
+
+.zxe-todo-check:disabled {
+  border-color: var(--line-strong);
+  background: var(--surface-3);
+}
+
+.zxe-todo.is-done .zxe-todo-check {
+  border-color: var(--green);
+  background: var(--green);
+}
+
+.zxe-todo.is-done .zxe-todo-check:hover:not(:disabled) {
+  box-shadow: 0 0 0 2px var(--green-soft);
+}
+
+.zxe-todo.is-done .zxe-todo-text {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.zxe-todo-text {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.zxe-list {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 2px 0;
+}
+
+.zxe-list-marker {
+  width: 18px;
+  flex: 0 0 auto;
+  color: var(--muted);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.75;
+  user-select: none;
+}
+
+.zxe-list-text {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+/* 引用块：左侧 --blue 竖线 + surface-2 背景，与普通段落明显区分。 */
+.zxe-quote {
+  margin: 10px 0;
+  padding: 8px 14px;
+  border-left: 3px solid var(--blue);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+.zxe-quote-text {
+  color: var(--ink);
+  font-size: 13.5px;
+  line-height: 1.75;
+}
+
+.zxe-quote-meta {
+  display: flex;
+  margin-top: 5px;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+/* 出处行：编辑态可点击打开弹层；阅读态是纯文本。 */
+.zxe-quote-source {
+  max-width: 100%;
+  padding: 0;
+  color: var(--muted);
+  font-size: inherit;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+button.zxe-quote-source {
+  border-bottom: 1px dashed transparent;
+  cursor: pointer;
+}
+
+button.zxe-quote-source:hover,
+button.zxe-quote-source:focus-visible {
+  border-bottom-color: var(--line-strong);
+  color: var(--ink);
+  outline: none;
+}
+
+.zxe-quote-add-source {
+  padding: 1px 7px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.zxe-quote-add-source:hover,
+.zxe-quote-add-source:focus-visible {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+  color: var(--blue-ink);
+  outline: none;
+}
+
+/* 关联笔记 / 来源链接 chip */
+.zxe-quote-note,
+.zxe-quote-url {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  max-width: 100%;
+  padding: 1px 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--blue-ink);
+  font-size: 11px;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+button.zxe-quote-note,
+button.zxe-quote-url {
+  cursor: pointer;
+}
+
+.zxe-quote-note:hover,
+.zxe-quote-url:hover,
+.zxe-quote-note:focus-visible,
+.zxe-quote-url:focus-visible {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+  outline: none;
+}
+
+.zxe-quote-note.is-missing,
+.zxe-quote-url.is-missing,
+.zxe-quote-url.is-invalid {
+  border-style: dashed;
+  background: transparent;
+  color: var(--red);
+  cursor: not-allowed;
+}
+
+.zxe-quote-edit {
+  margin-left: auto;
+  padding: 0 4px;
+  border-radius: 5px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.zxe-quote-edit:hover,
+.zxe-quote-edit:focus-visible {
+  background: var(--surface-3);
+  color: var(--ink);
+  outline: none;
+}
+
+/* 阅读态：不显示编辑按钮/虚线新增，来源 chip 仍可跳转。 */
+:where(.zxe--readonly) .zxe-quote {
+  background: color-mix(in srgb, var(--surface-2) 72%, var(--surface));
+}
+
+.zxe-divider {
+  width: 100%;
+  margin: 18px 0;
+  border: 0;
+  border-top: 1px solid var(--line-strong);
+}
+
+/* 代码块 */
+.zxe-code {
+  /* 代码高亮色只服务于正文 token，不参与全局主色。暗色在下方覆盖。 */
+  --code-keyword: #8b4bb8;
+  --code-string: #2f7d52;
+  --code-number: #9a6a1f;
+  --code-comment: #6b7484;
+  --code-title: #3f63b5;
+  --code-built-in: #2b7776;
+  --code-meta: #6a50b3;
+  --code-tag: #b4584b;
+  --code-attr: #9a6a1f;
+  --code-line: var(--line);
+  position: relative;
+  /* 内容优先：外壳不是卡片。代码阅读面由 head/body/foot 自己的 --surface-2
+     承担（可读性边界保留），外壳不再画 1px 外框和整块圆角。 */
+  margin: 10px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+}
+
+:root[data-theme='dark'] .zxe-code {
+  --code-keyword: #c8a8ff;
+  --code-string: #8fd6ae;
+  --code-number: #f0c27a;
+  --code-comment: #8e99ab;
+  --code-title: #9ab6f5;
+  --code-built-in: #75d4cf;
+  --code-meta: #c5afff;
+  --code-tag: #f2a39a;
+  --code-attr: #f0c27a;
+  --code-line: var(--line-strong);
+}
+
+/* 键盘进入代码块（编辑态根节点可聚焦）时给焦点环；属性头同时浮出。 */
+.zxe-code:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/*
+ * 代码属性头默认不渲染（ZX6-PROPS-02）：只在 hover / focus-within / 更多
+ * 菜单打开时浮出。绝对定位在代码块右上方，不占文档流、不推移正文、不覆盖
+ * 第一行代码；语言选择/复制/换行/行号能力保持不变。
+ */
+.zxe-code-head {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 4px);
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  max-width: 100%;
+  min-height: 28px;
+  padding: 3px 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-6);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  color: var(--muted);
+  font-size: 11px;
+  animation: zxe-props-in var(--motion-fast) ease-out;
+}
+
+.zxe-code-label {
+  flex: 0 0 auto;
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+}
+
+.zxe-code-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  min-width: 0;
+  margin-left: auto;
+}
+
+/* 语言组合框：输入 + 下拉 */
+.zxe-code-lang {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+.zxe-code-lang:focus-within {
+  border-color: var(--focus-ring);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--focus-ring) 20%, transparent);
+}
+
+.zxe-code-language-input {
+  width: 116px;
+  height: 24px;
+  margin: 0;
+  padding: 2px 20px 2px 7px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 20px;
+  outline: none;
+}
+
+.zxe-code-language-input::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
+.zxe-code-lang-toggle {
+  position: absolute;
+  right: 1px;
+  top: 50%;
+  display: grid;
+  width: 20px;
+  height: 22px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.zxe-code-lang-toggle:hover {
+  background: var(--surface-3);
+  color: var(--ink);
+}
+
+.zxe-code-lang-menu {
+  position: absolute;
+  top: calc(100% + 5px);
+  right: 0;
+  z-index: 40;
+  width: 232px;
+  max-height: 268px;
+  margin: 0;
+  padding: 4px;
+  overflow: auto;
+  list-style: none;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  color: var(--ink);
+}
+
+.zxe-code-lang-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.35;
+  cursor: pointer;
+}
+
+.zxe-code-lang-option code {
+  padding: 0;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+}
+
+.zxe-code-lang-option.is-active {
+  background: var(--surface-3);
+}
+
+.zxe-code-lang-option.is-selected {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+.zxe-code-lang-option.is-selected code {
+  color: var(--accent-ink);
+}
+
+.zxe-code-lang-empty {
+  padding: 8px;
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.zxe-code-language,
+.zxe-code-lang-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  white-space: nowrap;
+}
+
+.zxe-code-language {
+  color: var(--muted);
+  background: var(--surface);
+}
+
+.zxe-code-lang-badge.is-ok {
+  color: var(--green);
+  background: var(--green-soft);
+}
+
+.zxe-code-lang-badge.is-unknown {
+  color: var(--amber);
+  background: var(--amber-soft);
+}
+
+.zxe-code-action {
+  height: 24px;
+  padding: 0 7px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  line-height: 24px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.zxe-code-action:hover:not(:disabled) {
+  background: var(--surface-3);
+  color: var(--ink);
+}
+
+.zxe-code-action:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
+.zxe-code-action.is-on {
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+}
+
+.zxe-code-action.is-done {
+  color: var(--green);
+  background: var(--green-soft);
+}
+
+.zxe-code-action:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.zxe-code-body {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+  border-radius: 0;
+  background: var(--surface-2);
+}
+
+.zxe-code-gutter {
+  /* 与正文逻辑行共用纵向滚动；行号位置由镜像层测量后绝对定位。 */
+  position: relative;
+  flex: 0 0 44px;
+  min-width: 44px;
+  overflow: hidden;
+  border-right: 1px solid var(--code-line);
+  background: color-mix(in srgb, var(--surface-3) 55%, transparent);
+}
+
+.zxe-code-gutter-inner {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
+.zxe-code-gutter-inner span {
+  position: absolute;
+  right: 8px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-variant-ligatures: none;
+  line-height: 1.7;
+  user-select: none;
+}
+
+/* 隐藏镜像层：宽度与正文内容一致，用来测量每条逻辑行折行后的真实高度。 */
+.zxe-code-mirror {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 0;
+  visibility: hidden;
+  pointer-events: none;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-variant-ligatures: none;
+  line-height: 1.7;
+  tab-size: 2;
+  -moz-tab-size: 2;
+  white-space: pre;
+}
+
+.zxe-code-mirror-line {
+  min-height: 1.7em;
+}
+
+.zxe-code.is-wrap .zxe-code-mirror {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.zxe-code-view {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.zxe-code-input,
+.zxe-code-pre,
+.zxe-code-highlight {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  padding: 12px 14px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-variant-ligatures: none;
+  line-height: 1.7;
+  tab-size: 2;
+  -moz-tab-size: 2;
+  text-align: left;
+}
+
+.zxe-code-input {
+  position: relative;
+  z-index: 1;
+  display: block;
+  min-height: calc(3 * 1.7em + 24px);
+  max-height: 460px;
+  overflow: auto;
+  resize: vertical;
+  outline: none;
+  color: transparent;
+  caret-color: var(--ink);
+  white-space: pre;
+}
+
+.zxe-code-input::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
+.zxe-code-input::selection {
+  color: transparent;
+  background: color-mix(in srgb, var(--accent) 26%, transparent);
+}
+
+.zxe-code-input:focus-visible {
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--focus-ring) 55%, transparent);
+}
+
+.zxe-code-highlight {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  white-space: pre;
+  /* 与 textarea 的可折行宽度保持一致：扣掉纵向滚动条占位。 */
+  padding-right: calc(14px + var(--zxe-code-scrollbar, 0px));
+}
+
+.zxe-code.is-wrap .zxe-code-input,
+.zxe-code.is-wrap .zxe-code-highlight,
+.zxe-code.is-wrap .zxe-code-pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.zxe-code.is-wrap .zxe-code-input {
+  overflow-y: auto;
+}
+
+/* 只读没有 foot：内容面自己收底角。 */
+.zxe-code.is-readonly .zxe-code-body {
+  border-radius: 0 0 var(--radius-6) var(--radius-6);
+}
+
+.zxe-code.is-readonly .zxe-code-pre {
+  display: block;
+  min-height: 46px;
+  max-height: 460px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  white-space: pre;
+}
+
+.zxe-code.is-readonly.is-wrap .zxe-code-pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.zxe-code-pre code,
+.zxe-code-highlight code {
+  display: block;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  white-space: inherit;
+  overflow-wrap: inherit;
+  word-break: inherit;
+}
+
+/* 输入法组合期间显示文本域原文，避免拼音被高亮层遮住。 */
+.zxe-code.is-composing .zxe-code-highlight {
+  visibility: hidden;
+}
+
+.zxe-code.is-composing .zxe-code-input {
+  color: var(--ink);
+}
+
+.zxe-code-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 10px;
+  padding: 5px 12px 6px;
+  border-top: 1px solid var(--line);
+  border-radius: 0 0 var(--radius-6) var(--radius-6);
+  background: var(--surface-2);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  line-height: 1.5;
+}
+
+.zxe-code-hint {
+  color: var(--muted);
+  font-family: var(--font-sans);
+}
+
+.zxe-code-copy-status {
+  display: block;
+  padding: 0 12px;
+  color: var(--green);
+  font-family: var(--font-sans);
+  font-size: 10.5px;
+  line-height: 1.6;
+}
+
+.zxe-code-copy-status:empty {
+  display: none;
+}
+
+/* highlight.js token → 知行代码色（浅色/暗色共用变量） */
+.zxe-code .hljs-keyword,
+.zxe-code .hljs-selector-tag,
+.zxe-code .hljs-doctag {
+  color: var(--code-keyword);
+}
+
+.zxe-code .hljs-string,
+.zxe-code .hljs-regexp,
+.zxe-code .hljs-addition {
+  color: var(--code-string);
+}
+
+.zxe-code .hljs-number,
+.zxe-code .hljs-literal,
+.zxe-code .hljs-symbol,
+.zxe-code .hljs-bullet {
+  color: var(--code-number);
+}
+
+.zxe-code .hljs-comment,
+.zxe-code .hljs-quote {
+  color: var(--code-comment);
+  font-style: italic;
+}
+
+.zxe-code .hljs-title,
+.zxe-code .hljs-title.function_,
+.zxe-code .hljs-title.class_,
+.zxe-code .hljs-function .hljs-title {
+  color: var(--code-title);
+}
+
+.zxe-code .hljs-built_in,
+.zxe-code .hljs-type,
+.zxe-code .hljs-variable.language_ {
+  color: var(--code-built-in);
+}
+
+.zxe-code .hljs-meta,
+.zxe-code .hljs-meta .hljs-keyword,
+.zxe-code .hljs-link {
+  color: var(--code-meta);
+}
+
+.zxe-code .hljs-tag,
+.zxe-code .hljs-name,
+.zxe-code .hljs-deletion {
+  color: var(--code-tag);
+}
+
+.zxe-code .hljs-attr,
+.zxe-code .hljs-attribute,
+.zxe-code .hljs-property,
+.zxe-code .hljs-selector-class,
+.zxe-code .hljs-selector-id {
+  color: var(--code-attr);
+}
+
+.zxe-code .hljs-variable,
+.zxe-code .hljs-params,
+.zxe-code .hljs-subst {
+  color: var(--ink);
+}
+
+.zxe-code .hljs-punctuation,
+.zxe-code .hljs-operator {
+  color: var(--muted);
+}
+
+.zxe-code .hljs-emphasis {
+  font-style: italic;
+}
+
+.zxe-code .hljs-strong {
+  font-weight: 700;
+}
+
+/* 高对比度/强制颜色模式：透明文字会不可读，退回浏览器原生文本。 */
+@media (forced-colors: active) {
+  .zxe-code-input {
+    color: CanvasText;
+    caret-color: CanvasText;
+  }
+
+  .zxe-code-highlight {
+    display: none;
+  }
+
+  .zxe-code-input::selection {
+    color: HighlightText;
+    background: Highlight;
+  }
+}
+
+/* 表格：外壳去卡片；单元格网格线（内容结构）保留在 `.zxe-table` 上。 */
+.zxe-table-wrap {
+  position: relative;
+  margin: 10px 0;
+  border: 0;
+  border-radius: 0;
+  /* 不裁切上下文的浮出工具条；横向滚动仍由 .zxe-table-scroll 承担。 */
+  overflow: visible;
+  background: transparent;
+}
+
+/* 键盘进入表格对象时给容器一个焦点环，属性条同时浮出。 */
+.zxe-table-wrap:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/*
+ * 表格工具条跟随 caret 单元格（ZX7-TOOLBAR-01）：portal 到 body，
+ * position:fixed + 视口坐标由 toolbarPlacement 计算；上方不足翻到 caret 行
+ * 下方，左右越界夹取。工具条不再属于表格局部 stacking context。
+ */
+.zxe-table-toolbar {
+  position: fixed;
+  z-index: var(--z-toolbar, 300);
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 6px;
+  max-width: calc(100vw - 16px);
+  padding: 4px 6px;
+  overflow: visible;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-8);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  animation: zxe-props-in var(--motion-fast) ease-out;
+}
+
+.zxe-table-toolbar[data-positioned='false'] {
+  opacity: 0;
+}
+
+/* 窄窗：保持 5 个控件不换行，靠收缩间距与按钮内边距留在视口内。 */
+@media (max-width: 640px) {
+  .zxe-table-toolbar,
+  .zxe-formula-head {
+    gap: 4px;
+    padding: 3px 5px;
+  }
+
+  .zxe-table-toolbar button,
+  .zxe-formula-action {
+    padding-right: 6px;
+    padding-left: 6px;
+  }
+}
+
+.zxe-table-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding-right: 5px;
+  border-right: 1px solid var(--line);
+}
+
+.zxe-table-group:last-child {
+  padding-right: 0;
+  border-right: 0;
+}
+
+.zxe-table-toolbar button {
+  padding: 3px 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--muted);
+  font: inherit;
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.zxe-table-toolbar button:hover:not(:disabled) {
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+
+.zxe-table-toolbar button.is-on,
+.zxe-table-toolbar button[aria-pressed='true'] {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+  color: var(--blue-ink);
+}
+
+.zxe-table-toolbar button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+/* 「更多」触发器沿用表格工具条外观，而不是块级 ⋯ 的透明样式。 */
+.zxe-table-toolbar .zxe-overflow-trigger {
+  height: auto;
+  padding: 3px 8px;
+  border-color: var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  font: inherit;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.zxe-table-more {
+  margin-left: auto;
+}
+
+.zxe-table-more-trigger {
+  font-weight: 650;
+}
+
+/* 表格「更多」菜单：13 项 + 3 段分隔（ZX-DESIGN-15 §4.2）。 */
+.zxe-overflow-menu[aria-label='更多表格操作'] {
+  width: 236px;
+  max-width: min(280px, calc(100vw - 16px));
+}
+
+.zxe-table-error {
+  margin: 0;
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--line);
+  background: var(--danger-soft, var(--surface-2));
+  color: var(--danger, var(--red-ink, var(--ink)));
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.zxe-table-scroll {
+  overflow: auto;
+}
+
+.zxe-table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  min-width: 100%;
+}
+
+.zxe-table th,
+.zxe-table td {
+  position: relative;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 0;
+  text-align: left;
+  vertical-align: top;
+}
+
+.zxe-table tr:last-child td,
+.zxe-table tr:last-child th {
+  border-bottom: 0;
+}
+
+.zxe-table th:last-child,
+.zxe-table td:last-child {
+  border-right: 0;
+}
+
+.zxe-table th {
+  background: var(--surface-2);
+  font-weight: 600;
+}
+
+.zxe-table-anchor {
+  transition: background 80ms ease;
+}
+
+.zxe-table-anchor.is-selected {
+  background: var(--blue-soft);
+}
+
+.zxe-table-anchor.is-active {
+  box-shadow: inset 0 0 0 2px var(--focus-ring);
+}
+
+.zxe-table-cell {
+  display: block;
+  width: 100%;
+  min-height: 32px;
+  padding: 7px 9px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: 1.5;
+  text-align: inherit;
+  outline: none;
+}
+
+.zxe-table-cell::placeholder {
+  color: var(--muted);
+  opacity: 0.7;
+}
+
+.zxe-table-cell:focus {
+  box-shadow: inset 0 0 0 2px var(--focus-ring);
+}
+
+.zxe-table-text {
+  display: block;
+  min-height: 32px;
+  padding: 7px 9px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.zxe-col-resize {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  z-index: 2;
+  width: 7px;
+  height: 100%;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.zxe-col-resize::after {
+  content: '';
+  position: absolute;
+  top: 18%;
+  bottom: 18%;
+  left: 3px;
+  width: 1px;
+  background: var(--line-strong);
+  opacity: 0;
+  transition: opacity 80ms ease;
+}
+
+.zxe-col-resize:hover::after,
+.zxe-table th:hover .zxe-col-resize::after,
+.zxe-table td:hover .zxe-col-resize::after {
+  opacity: 1;
+}
+
+.zxe-table-selection-chip {
+  flex: 0 0 auto;
+  padding: 1px 7px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 10.5px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/*
+ * 状态消息：1.6s 气泡，绝对定位不占布局；表格下方不再有常驻说明行。
+ * 表格在视口顶部、工具条翻到下方时，气泡改到表格上方。
+ */
+.zxe-table-toast {
+  position: absolute;
+  right: 0;
+  bottom: -30px;
+  z-index: 4;
+  padding: 3px 9px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 10.5px;
+  line-height: 1.5;
+  box-shadow: var(--shadow-sm);
+  pointer-events: none;
+  animation: zxe-table-toast 1.6s ease both;
+}
+
+.zxe-table-wrap.is-toolbar-below .zxe-table-toast {
+  top: -30px;
+  bottom: auto;
+  animation-name: zxe-table-toast-above;
+}
+
+@keyframes zxe-table-toast {
+  0% {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+
+  8%,
+  85% {
+    opacity: 1;
+    transform: none;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes zxe-table-toast-above {
+  0% {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+
+  8%,
+  85% {
+    opacity: 1;
+    transform: none;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zxe-table-toast,
+  .zxe-table-toolbar,
+  .zxe-code-head,
+  .zxe-formula-head {
+    animation: none;
+  }
+}
+
+.zxe-table-export {
+  border-top: 1px solid var(--line-strong);
+  background: var(--surface);
+}
+
+.zxe-table-export-head,
+.zxe-table-export-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 9px;
+  background: var(--surface-2);
+  font-size: 11.5px;
+}
+
+.zxe-table-export-head {
+  border-bottom: 1px solid var(--line);
+}
+
+.zxe-table-export-actions {
+  border-top: 1px solid var(--line);
+}
+
+.zxe-table-export-head button,
+.zxe-table-export-actions button {
+  padding: 3px 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--muted);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.zxe-table-export-head button:hover,
+.zxe-table-export-actions button:hover {
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+
+.zxe-table-export-body {
+  max-height: 240px;
+  margin: 0;
+  padding: 10px;
+  overflow: auto;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11.5px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/*
+ * 文件行（ZX-FILE-05 / ZX-DESIGN-09 §3.6）：紧凑附件行，不是第二层卡片。
+ * 默认无边框、透明底；hover/focus-within 才出现行背景与动作。
+ * 行高由 20px 图标 + 上下 4px 内边距 / 正文单行行高共同决定，≤ 34px。
+ */
+.zxe-filecard {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  min-height: 34px;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: var(--radius-6);
+  background: transparent;
+  transition: background var(--motion-fast);
+}
+
+.zxe-filecard:hover,
+.zxe-filecard:focus-within {
+  background: var(--surface-2);
+}
+
+.zxe-filecard-icon {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 5px;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: var(--text-9-5);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.zxe-filecard[data-file-state='missing'] .zxe-filecard-icon,
+.zxe-filecard[data-file-state='remote'] .zxe-filecard-icon {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+.zxe-filecard[data-file-state='unavailable'] .zxe-filecard-icon,
+.zxe-filecard[data-file-state='none'] .zxe-filecard-icon {
+  background: var(--surface-3);
+  color: var(--muted);
+}
+
+.zxe-filecard-name,
+.zxe-filecard-name-input {
+  min-width: 0;
+  max-width: 60%;
+  flex: 0 1 auto;
+  overflow: hidden;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: var(--text-13);
+  font-weight: 550;
+  line-height: 1.5;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zxe-filecard-name {
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  cursor: text;
+  user-select: text;
+}
+
+.zxe-filecard-name:hover {
+  color: var(--accent-ink);
+}
+
+.zxe-filecard-name:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
+.zxe-filecard-name-input {
+  width: 0;
+  max-width: none;
+  flex: 1 1 160px;
+  padding: 1px 4px;
+  border: 1px solid var(--focus-ring);
+  border-radius: 4px;
+  background: var(--surface);
+  outline: none;
+}
+
+.zxe-filecard-meta {
+  min-width: 0;
+  flex: 0 1 auto;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: var(--text-11-5);
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zxe-filecard-state {
+  flex: 0 0 auto;
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-3);
+  color: var(--muted);
+  font-size: var(--text-10-5);
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.zxe-filecard-state.is-local {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+.zxe-filecard-state.is-missing {
+  background: var(--red-soft);
+  color: var(--red);
+  font-weight: 600;
+}
+
+.zxe-filecard-state.is-remote {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+.zxe-filecard-state.is-unavailable,
+.zxe-filecard-state.is-none {
+  background: var(--surface-3);
+  color: var(--muted);
+}
+
+.zxe-filecard-error {
+  min-width: 0;
+  max-width: 220px;
+  flex: 0 1 auto;
+  overflow: hidden;
+  color: var(--red);
+  font-size: var(--text-10-5);
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zxe-filecard-side {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+  opacity: 0;
+  transition: opacity var(--motion-fast);
+}
+
+.zxe-filecard:hover .zxe-filecard-side,
+.zxe-filecard:focus-within .zxe-filecard-side,
+.zxe-filecard-side:focus-within {
+  opacity: 1;
+}
+
+.zxe-filecard-action {
+  display: inline-flex;
+  min-width: 24px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 7px;
+  border: 0;
+  border-radius: var(--radius-6);
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: var(--text-11-5);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.zxe-filecard-action:hover:not(:disabled),
+.zxe-filecard-action:focus-visible {
+  background: var(--surface-3);
+  color: var(--ink);
+}
+
+.zxe-filecard-action.is-primary {
+  color: var(--accent-ink);
+}
+
+.zxe-filecard-action:disabled {
+  cursor: progress;
+  opacity: 0.55;
+}
+
+/* 连续文件行之间不再额外制造间距；行距由正文基线统一控制。 */
+.zxe-filecard + .zxe-filecard {
+  margin-top: 0;
+}
+
+@media (hover: none) {
+  .zxe-filecard-side {
+    opacity: 1;
+  }
+}
+
+/*
+ * 窄窗（ZX-DESIGN-09 §3.7）：两行。第一行图标 + 文件名 + ⋯；
+ * 第二行元信息与状态。动作收进 `⋯` 菜单，顶部不再单独放「打开」。
+ */
+@media (max-width: 720px) {
+  .zxe-filecard {
+    display: grid;
+    grid-template-columns: 20px minmax(0, 1fr) auto;
+    grid-template-areas:
+      'icon name actions'
+      '. meta state'
+      '. error error';
+    align-items: center;
+    column-gap: 8px;
+    row-gap: 0;
+    padding: 5px 6px 6px;
+  }
+
+  .zxe-filecard-icon {
+    grid-area: icon;
+  }
+
+  .zxe-filecard-name,
+  .zxe-filecard-name-input {
+    grid-area: name;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    flex: initial;
+  }
+
+  .zxe-filecard-side {
+    grid-area: actions;
+    margin-left: 0;
+    opacity: 1;
+  }
+
+  .zxe-filecard-action.is-primary {
+    display: none;
+  }
+
+  .zxe-filecard-meta {
+    grid-area: meta;
+    font-size: var(--text-10-5);
+  }
+
+  .zxe-filecard-state {
+    grid-area: state;
+    margin-left: 0;
+  }
+
+  .zxe-filecard-error {
+    grid-area: error;
+    max-width: none;
+  }
+}
+
+.zxe-file-status,
+.zxe-file-error {
+  margin: 6px 0;
+  font-size: 12px;
+}
+
+.zxe-file-status {
+  color: var(--muted);
+}
+
+.zxe-file-error {
+  padding: 6px 9px;
+  border: 1px solid var(--danger-soft, var(--line));
+  border-radius: 6px;
+  background: var(--danger-soft, var(--surface-2));
+  color: var(--danger, var(--red-ink, var(--ink)));
+}
+
+.zxe-file-preview {
+  position: fixed;
+  z-index: 80;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgb(15 18 24 / 55%);
+}
+
+.zxe-file-preview-panel {
+  display: flex;
+  width: min(80vw, 720px);
+  max-height: 82vh;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: var(--radius-md, 10px);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg, 0 20px 60px rgb(0 0 0 / 25%));
+}
+
+.zxe-file-preview-panel header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.zxe-file-preview-panel img {
+  max-width: 100%;
+  max-height: 68vh;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
+.zxe-file-preview-close {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* 画板 */
+/* 画板块：外层只保留对象间距，surface 由 BoardEmbed 的 .bw-embed 统一。 */
+.zxe-row .zxe-board {
+  margin: 10px 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+/* 嵌入画板的外壳同样不是卡片；画布预览的边界由 .bw-embed-preview 保留。 */
+.zxe-row .bw-embed {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.zxe-row .bw-embed:hover {
+  border-color: transparent;
+}
+
+.zxe-board {
+  margin: 10px 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.zxe-board-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.zxe-board-icon,
+.zxe-formula-icon,
+.zxe-linkblock-icon {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 6px;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 13px;
+}
+
+.zxe-board-title,
+.zxe-board-title-input {
+  min-width: 0;
+  flex: 1 1 auto;
+  padding: 2px 4px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  font-weight: 600;
+  outline: none;
+}
+
+.zxe-board-title-input:focus {
+  border-color: var(--focus-ring);
+  background: var(--surface);
+}
+
+.zxe-board-hint {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.65;
+}
+
+/* 公式：KaTeX 离线渲染。颜色全部继承知行 token，深色主题自动切换。
+   外壳不画边框；公式头/源/脚各自的 --surface-2 与分隔线保留。 */
+.zxe-formula {
+  position: relative;
+  margin: 10px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow: visible;
+}
+
+.zxe-formula:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* 编辑态不再把整块描成 --blue；焦点由 textarea 自身 :focus 表达。 */
+.zxe-formula.is-editing {
+  background: transparent;
+}
+
+/* 公式工具条跟随 caret 行 / 预览右上角（ZX7-TOOLBAR-01）：portal 到 body，
+   position:fixed 的 left/top 由 toolbarPlacement 计算；编辑态与阅读态共用
+   同一套边界翻转与夹取，不再占用或推移文档流。 */
+.zxe-formula-head {
+  position: fixed;
+  z-index: var(--z-toolbar, 300);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  max-width: calc(100vw - 16px);
+  padding: 4px 6px;
+  overflow: visible;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-8);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  font-size: 11px;
+  animation: zxe-props-in var(--motion-fast) ease-out;
+}
+
+.zxe-formula-head[data-positioned='false'] {
+  opacity: 0;
+}
+
+@keyframes zxe-props-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.zxe-formula-title {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ink);
+  font-weight: var(--weight-semibold);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zxe-formula-meta {
+  color: var(--muted);
+  font-size: 10.5px;
+}
+
+.zxe-formula-mode {
+  padding: 1px 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.zxe-formula-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+}
+
+.zxe-formula-action {
+  display: inline-flex;
+  height: 23px;
+  align-items: center;
+  padding: 0 6px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 10.5px;
+  white-space: nowrap;
+}
+
+.zxe-formula-action:hover {
+  border-color: var(--line);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.zxe-formula-action.is-on {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+.zxe-formula-preview {
+  --zxe-formula-zoom: 1;
+
+  display: grid;
+  min-height: 84px;
+  place-items: center;
+  padding: 18px 16px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  color: var(--ink);
+  font-size: calc(15px * var(--zxe-formula-zoom));
+  transition: opacity 120ms ease;
+}
+
+.zxe-formula:not(.is-readonly):not(.is-editing) .zxe-formula-preview {
+  cursor: text;
+}
+
+.zxe-formula-preview.is-inline {
+  display: block;
+  min-height: 56px;
+  padding: 14px 16px;
+  text-align: left;
+}
+
+.zxe-formula-preview.is-stale {
+  opacity: 0.5;
+}
+
+.zxe-formula-preview .katex-display {
+  margin: 0;
+}
+
+.zxe-formula-preview .katex {
+  color: var(--ink);
+}
+
+.zxe-formula-rendered {
+  max-width: 100%;
+}
+
+.zxe-formula-inline-wrap {
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.zxe-formula-inline-slot {
+  display: inline-block;
+  margin: 0 4px;
+  color: var(--ink);
+  font-size: calc(1em * var(--zxe-formula-zoom));
+  vertical-align: middle;
+}
+
+.zxe-formula-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  color: var(--muted);
+  font-size: 11.5px;
+  text-align: center;
+}
+
+.zxe-formula-empty strong {
+  color: var(--ink);
+  font-weight: var(--weight-semibold);
+  font-size: 12.5px;
+}
+
+.zxe-formula-empty.is-error {
+  color: var(--red);
+}
+
+.zxe-formula-empty.is-error strong {
+  color: var(--red);
+}
+
+.zxe-formula-empty-action {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent-ink);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.zxe-formula-empty-action:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+.zxe-formula-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 7px 10px;
+  border-top: 1px solid var(--line);
+  background: var(--red-soft);
+  color: var(--red);
+  font: 10.5px/1.55 var(--font-mono);
+}
+
+.zxe-formula-error-icon {
+  display: grid;
+  width: 14px;
+  height: 14px;
+  flex: none;
+  place-items: center;
+  margin-top: 1px;
+  border-radius: 50%;
+  background: var(--red);
+  color: var(--surface);
+  font: 700 9px/1 var(--font-sans);
+}
+
+.zxe-formula-error-body {
+  min-width: 0;
+}
+
+.zxe-formula-error-message {
+  display: block;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  font: inherit;
+}
+
+.zxe-formula-error-pos {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.zxe-formula-error-excerpt {
+  margin: 4px 0 0;
+  padding: 4px 6px;
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--ink);
+  font: 10px/1.4 var(--font-mono);
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.zxe-formula-source {
+  margin: 0;
+  padding: 8px 10px;
+  border-top: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--ink);
+  font: 11.5px/1.6 var(--font-mono);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.zxe-formula-input {
+  display: block;
+  width: 100%;
+  min-height: 64px;
+  max-height: 180px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink);
+  font: 11.5px/1.6 var(--font-mono);
+  outline: none;
+  resize: vertical;
+}
+
+.zxe-formula-input:focus {
+  border-color: var(--focus-ring);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.zxe-formula-templates {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  padding: 0 10px 8px;
+  background: var(--surface-2);
+}
+
+.zxe-formula-templates-label {
+  margin-right: 2px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.zxe-formula-templates button {
+  height: 21px;
+  padding: 0 6px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--surface);
+  color: var(--muted);
+  font: 10px var(--font-mono);
+}
+
+.zxe-formula-templates button:hover {
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.zxe-formula-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 9px;
+  border-top: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.zxe-formula-zoom {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.zxe-formula-zoom button {
+  height: 20px;
+  padding: 0 5px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.zxe-formula-zoom button:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.zxe-formula-zoom button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.zxe-formula-zoom-value {
+  min-width: 34px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.zxe-formula-version {
+  margin-left: auto;
+}
+
+/* 公式导出弹窗 */
+.zxe-formula-export-tabs {
+  display: flex;
+  gap: 4px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.zxe-formula-export-tabs button {
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+.zxe-formula-export-tabs button:hover {
+  color: var(--ink);
+}
+
+.zxe-formula-export-tabs button.is-on {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+.zxe-formula-export-text {
+  max-height: 320px;
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--ink);
+  font: 11.5px/1.65 var(--font-mono);
+  overflow: auto;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.zxe-formula-export-note {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+/* 链接卡：外链 / 内链 / 失效态共用一套行内对象语义，不画卡片外框；
+   身份由图标与标题表达。站内链接保留 3px 左侧语义线。 */
+.zxe-linkblock {
+  display: flex;
+  max-width: 560px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 10px 0;
+  padding: 4px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.zxe-linkblock[data-kind='note'] {
+  padding-left: 10px;
+  border-left: 3px solid var(--blue);
+}
+
+.zxe-linkblock[data-invalid='true'] {
+  border-color: var(--red);
+}
+
+.zxe-linkblock > .zxe-linkblock-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-8);
+  background: var(--blue-soft);
+  color: var(--blue-ink);
+  font-size: var(--text-14);
+}
+
+.zxe-linkblock[data-invalid='true'] > .zxe-linkblock-icon {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.zxe-linkblock-main {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.zxe-linkblock-title {
+  min-width: 0;
+  max-width: 100%;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: var(--text-12-5);
+  font-weight: 600;
+  line-height: 1.5;
+  text-align: left;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.zxe-linkblock-title:hover:not(:disabled) {
+  color: var(--blue-ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.zxe-linkblock-title:disabled {
+  cursor: default;
+}
+
+.zxe-linkblock-title.is-invalid {
+  color: var(--ink);
+}
+
+.zxe-linkblock-title.is-invalid:hover {
+  color: var(--red);
+  text-decoration-color: var(--red);
+}
+
+.zxe-linkblock-meta {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: var(--text-10-5);
+  line-height: 1.45;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zxe-linkblock[data-invalid='true'] .zxe-linkblock-meta {
+  color: var(--red);
+}
+
+.zxe-linkblock-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 3px;
+  opacity: 0.45;
+}
+
+.zxe-linkblock:hover .zxe-linkblock-actions,
+.zxe-linkblock:focus-within .zxe-linkblock-actions {
+  opacity: 1;
+}
+
+.zxe-linkblock-action {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border: 0;
+  border-radius: var(--radius-6);
+  background: transparent;
+  color: var(--muted);
+  font-size: var(--text-12);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.zxe-linkblock-action:hover:not(:disabled) {
+  background: var(--surface-3);
+  color: var(--ink);
+}
+
+.zxe-linkblock-action:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.zxe-linkblock-action.is-text {
+  width: auto;
+  padding: 0 6px;
+  font-size: var(--text-10-5);
+}
+
+/* 打开失败的提示占满整行，错误可复制；不改变卡片高度以外任何布局。 */
+.zxe-linkblock-notice {
+  display: flex;
+  min-width: 0;
+  flex: 1 0 100%;
+  align-items: center;
+  gap: 6px;
+  margin: 2px 0 0 38px;
+  color: var(--muted);
+  font-size: var(--text-10-5);
+  line-height: 1.5;
+}
+
+.zxe-linkblock-notice.is-error {
+  color: var(--red);
+}
+
+.zxe-linkblock-notice button {
+  flex: 0 0 auto;
+  padding: 1px 7px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.zxe-linkblock-notice button:hover {
+  background: var(--red-soft);
+}
+
+/* 知识页正文的 a 规则不能把卡片标题画成普通下划线链接 */
+.kn-body .zxe-linkblock-title {
+  border-bottom: 0;
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.kn-body .zxe-linkblock-title:hover:not(:disabled) {
+  color: var(--blue-ink);
+  text-decoration: underline;
+}
+
+/* 链接编辑弹层 */
+.zxe-link-dialog {
+  width: min(460px, calc(100vw - 32px));
+}
+
+.zxe-link-target {
+  color: var(--muted);
+  font-size: var(--text-10-5);
+  line-height: 1.55;
+}
+
+.zxe-link-target.is-invalid {
+  color: var(--red);
+}
+
+.zxe-dialog-spacer {
+  flex: 1 1 auto;
+}
+
+/* 未知块不是对象 surface：只保留只读提示，不加卡片边框/整块背景。 */
+.zxe-unknown {
+  margin: 8px 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.zxe-unknown-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.zxe-unknown-head strong {
+  color: var(--ink);
+}
+
+.zxe-unknown-json {
+  max-height: 160px;
+  margin: 8px 0 0;
+  padding: 8px;
+  overflow: auto;
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  white-space: pre-wrap;
+}
+
+/* 右侧工具轨 */
+.zxe-rail {
+  position: absolute;
+  top: 12px;
+  right: 8px;
+  z-index: 120;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(6px);
+}
+
+.zxe-rail button {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 7px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.zxe-rail button:hover:not(:disabled),
+.zxe-rail button[aria-pressed='true'] {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+.zxe-rail-state {
+  display: grid;
+  height: 18px;
+  place-items: center;
+  font-size: 9px;
+  color: var(--muted);
+}
+
+.zxe-rail-state.is-saved {
+  color: var(--green);
+}
+
+.zxe-rail-state.is-dirty,
+.zxe-rail-state.is-saving {
+  color: var(--amber);
+}
+
+.zxe-rail-state.is-error {
+  color: var(--red);
+}
+
+.zxe--focus .zxe-status {
+  padding-inline: max(24px, calc((100% - 760px) / 2));
+}
+
+.zxe--focus .zxe-rail {
+  opacity: 0.55;
+}
+
+.zxe--focus .zxe-rail:hover {
+  opacity: 1;
+}
+
+/* 状态栏 */
+.zxe-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 7px max(28px, calc((100% - var(--zxe-read-width)) / 2)) 9px;
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.zxe-save-state.is-saved {
+  color: var(--green);
+}
+
+.zxe-save-state.is-dirty,
+.zxe-save-state.is-saving {
+  color: var(--amber);
+}
+
+.zxe-save-state.is-error {
+  color: var(--red);
+}
+
+.zxe-status-meta {
+  font-variant-numeric: tabular-nums;
+}
+
+/* 文档级块选择操作条（ZX-NOTE-03） */
+.zxe-selectionbar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 5px max(28px, calc((100% - var(--zxe-read-width)) / 2));
+  border-top: 1px solid
+    color-mix(in srgb, var(--accent) 28%, var(--line));
+  background: color-mix(in srgb, var(--accent-soft) 62%, var(--surface));
+  color: var(--accent-ink);
+  font-size: 11.5px;
+}
+
+.zxe-selection-count {
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.zxe-selection-hint {
+  color: var(--muted);
+}
+
+.zxe-selectionbar button {
+  padding: 3px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.zxe-selectionbar button:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.zxe-selectionbar button:focus-visible {
+  border-color: var(--focus-ring);
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
+.zxe-selectionbar button.is-danger {
+  border-color: color-mix(in srgb, var(--red) 45%, var(--line));
+  color: var(--red);
+}
+
+.zxe-selectionbar button.is-danger:hover:not(:disabled) {
+  border-color: var(--red);
+  background: color-mix(in srgb, var(--red) 8%, var(--surface));
+}
+
+.zxe-selectionbar-spacer {
+  flex: 1 1 auto;
+}
+
+.zxe-select-all {
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--ink);
+  font-size: 10.5px;
+  line-height: 1.5;
+}
+
+.zxe-select-all:hover {
+  border-color: var(--line-strong);
+  background: var(--surface);
+}
+
+.zxe-select-all:focus-visible {
+  border-color: var(--focus-ring);
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
+.zxe-selection-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 54px;
+  z-index: 340;
+  max-width: min(520px, calc(100vw - 40px));
+  margin: 0;
+  padding: 7px 14px;
+  transform: translateX(-50%);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 88%, transparent);
+  color: var(--surface);
+  box-shadow: var(--shadow);
+  font-size: 11.5px;
+  line-height: 1.5;
+  pointer-events: none;
+}
+
+.zxe-focus-body {
+  outline: none;
+}
+
+/* 批量移动到另一篇笔记：复用编辑器的弹层样式 */
+.zxe-move-dialog {
+  width: min(420px, calc(100vw - 32px));
+}
+
+.zxe-move-list {
+  display: flex;
+  max-height: 240px;
+  flex-direction: column;
+  gap: 6px;
+  margin: 10px 0 14px;
+  overflow-y: auto;
+}
+
+.zxe-move-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 9px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.zxe-move-item:hover {
+  border-color: var(--line-strong);
+}
+
+.zxe-move-item:has(input:checked) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.zxe-move-item input {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.zxe-move-title {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zxe-move-empty {
+  margin: 10px 0 14px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+@media (max-width: 720px) {
+  .zxe-selectionbar {
+    flex-wrap: wrap;
+    padding-inline: 12px;
+  }
+
+  .zxe-selection-hint {
+    display: none;
+  }
+}
+
+/* 撤销/重做：留在状态栏，不新增右侧工具轨条目 */
+.zxe-history {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.zxe-history-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--ink);
+  font-size: 10.5px;
+  line-height: 1.5;
+}
+
+.zxe-history-button:hover:not(:disabled) {
+  border-color: var(--line-strong);
+  background: var(--surface);
+}
+
+.zxe-history-button:focus-visible {
+  border-color: var(--focus-ring);
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
+.zxe-history-button:disabled {
+  color: var(--muted);
+  cursor: default;
+  opacity: 0.5;
+}
+
+.zxe-save-error {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--red);
+}
+
+.zxe-save-error button {
+  padding: 2px 8px;
+  border: 1px solid var(--red);
+  border-radius: 6px;
+  color: var(--red);
+  font-size: 10px;
+}
+
+.zxe-status-json {
+  margin-left: auto;
+  padding: 1px 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 10px;
+}
+
+/* 划词格式条 */
+.zxe-formatbar {
+  position: fixed;
+  z-index: 320;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 5px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.zxe-formatbar button {
+  display: grid;
+  width: 27px;
+  height: 27px;
+  place-items: center;
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.zxe-formatbar button:hover,
+.zxe-formatbar button.is-active {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+.zxe-formatbar-sep {
+  width: 1px;
+  height: 17px;
+  margin: 0 2px;
+  background: var(--line);
+}
+
+.zxe-swatch {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 6px;
+}
+
+.zxe-swatch span {
+  display: block;
+  width: 13px;
+  height: 13px;
+  border: 1px solid var(--line-strong);
+  border-radius: 3px;
+}
+
+.zxe-formatbar-clear {
+  color: var(--muted);
+}
+
+/* 块菜单 */
+.zxe-menu {
+  position: fixed;
+  z-index: 420;
+  max-height: min(460px, calc(100vh - 24px));
+  padding: 6px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.zxe-menu-group + .zxe-menu-group {
+  margin-top: 4px;
+  padding-top: 5px;
+  border-top: 1px solid var(--line);
+}
+
+.zxe-menu-group-label {
+  padding: 5px 8px 3px;
+  color: var(--muted);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.zxe-menu-item {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 8px;
+  border-radius: 7px;
+  text-align: left;
+  font-size: 12px;
+}
+
+.zxe-menu-item:hover {
+  background: var(--surface-3);
+}
+
+.zxe-menu-icon {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+}
+
+.zxe-menu-text {
+  flex: 0 0 auto;
+}
+
+.zxe-menu-hint {
+  margin-left: auto;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zxe-menu-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 3px 4px 5px;
+}
+
+.zxe-menu-actions button {
+  flex: 1 1 auto;
+  padding: 5px 7px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.zxe-menu-actions button:hover:not(:disabled) {
+  background: var(--surface-3);
+  color: var(--ink);
+}
+
+.zxe-menu-actions button.is-danger {
+  color: var(--red);
+}
+
+/* 样式面板 */
+.zxe-stylepanel {
+  position: absolute;
+  top: 8px;
+  right: 48px;
+  z-index: 240;
+  width: 300px;
+  max-height: calc(100% - 16px);
+  padding: 13px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+/*
+ * 知识页命令栏：样式 popover 贴编辑器正文右上缘（命令栏「Aa」/右栏「样式」）。
+ * 右缘留 12px，外层右栏仍是独立的 48px 网格列，面板不会盖住右栏；
+ * 外层浮层与工具条使用 --z-rail-flyout 现有层级，不另造层级。
+ */
+.zxe--external-rail .zxe-stylepanel {
+  top: 6px;
+  right: 12px;
+  left: auto;
+  z-index: var(--z-rail-flyout, 340);
+  width: min(364px, calc(100% - 24px));
+  max-height: calc(100% - 12px);
+}
+
+.zxe-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.zxe-panel-head h2 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.zxe-panel-head p {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 10.5px;
+}
+
+.zxe-panel-close {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.zxe-panel-close:hover {
+  background: var(--surface-3);
+}
+
+.zxe-panel-current {
+  margin: 10px 0 0;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 10.5px;
+}
+
+.zxe-panel-section {
+  margin-top: 13px;
+}
+
+.zxe-panel-section h3 {
+  margin: 0 0 6px;
+  color: var(--muted);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.zxe-panel-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.zxe-panel-grid button {
+  min-height: 29px;
+  padding: 3px 5px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-2);
+  font-size: 11px;
+}
+
+.zxe-panel-grid button:hover:not(:disabled),
+.zxe-panel-grid button.is-active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+.zxe-panel-inline button {
+  font-size: 12px;
+}
+
+.zxe-panel-colors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.zxe-panel-colors .zxe-swatch {
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+}
+
+.zxe-panel-clear {
+  width: 100%;
+  margin-top: 13px;
+  padding: 7px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.zxe-panel-clear:hover:not(:disabled) {
+  background: var(--surface-3);
+  color: var(--ink);
+}
+
+/* 链接弹层 */
+.zxe-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: grid;
+  place-items: center;
+  background: rgba(20, 28, 42, 0.28);
+}
+
+.zxe-dialog {
+  width: min(384px, calc(100vw - 32px));
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.zxe-dialog h2 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.zxe-quote-dialog {
+  width: min(430px, calc(100vw - 32px));
+}
+
+.zxe-dialog p {
+  margin: 6px 0 12px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.zxe-dialog input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 7px;
+  background: var(--surface-2);
+  outline: none;
+}
+
+.zxe-dialog input:focus {
+  border-color: var(--focus-ring);
+  background: var(--surface);
+}
+
+.zxe-dialog select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 7px;
+  background: var(--surface-2);
+  color: var(--ink);
+  outline: none;
+}
+
+.zxe-dialog select:focus {
+  border-color: var(--focus-ring);
+  background: var(--surface);
+}
+
+.zxe-dialog-field {
+  display: flex;
+  margin-top: 10px;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.zxe-dialog-field > label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--ink);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.zxe-dialog-counter {
+  color: var(--muted);
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 400;
+}
+
+.zxe-dialog-counter.is-over {
+  color: var(--red);
+}
+
+.zxe-dialog-hint {
+  color: var(--muted);
+  font-size: 10.5px;
+  line-height: 1.55;
+}
+
+.zxe-dialog-warning {
+  margin: 8px 0 0 !important;
+  padding: 7px 9px;
+  border: 1px solid color-mix(in srgb, var(--red) 32%, var(--line));
+  border-radius: 7px;
+  background: var(--red-soft);
+  color: var(--red) !important;
+  font-size: 11px !important;
+}
+
+.zxe-dialog-clear {
+  margin-right: auto;
+  color: var(--red) !important;
+}
+
+.zxe-dialog-error {
+  color: var(--red) !important;
+}
+
+.zxe-dialog-tabs {
+  display: flex;
+  gap: 6px;
+  margin: 12px 0;
+}
+
+.zxe-dialog-tabs button {
+  flex: 1 1 0;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.zxe-dialog-tabs button.is-active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.zxe-link-notes {
+  display: flex;
+  max-height: 190px;
+  margin-top: 8px;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+}
+
+.zxe-link-note {
+  padding: 7px 9px;
+  border-radius: 6px;
+  color: var(--ink);
+  font-size: 12.5px;
+  text-align: left;
+}
+
+.zxe-link-note:hover,
+.zxe-link-note:focus-visible {
+  background: var(--surface-2);
+}
+
+.zxe-dialog-empty {
+  margin: 10px 0 0 !important;
+  padding: 10px;
+  border: 1px dashed var(--line);
+  border-radius: 7px;
+  text-align: center;
+}
+
+.zxe-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 7px;
+  margin-top: 14px;
+}
+
+.zxe-dialog-actions button {
+  padding: 6px 13px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface-2);
+  font-size: 12px;
+}
+
+.zxe-dialog-actions button.is-primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+/* 文件选择器保持可访问但不可见 */
+.zxe-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 加载/错误 */
+.zxe-loading {
+  margin: auto;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.zxe-load-error {
+  max-width: 420px;
+  margin: auto;
+  padding: 18px;
+  border: 1px solid var(--red);
+  border-radius: var(--radius);
+  background: var(--red-soft);
+}
+
+.zxe-load-error strong {
+  color: var(--red);
+}
+
+.zxe-load-error p {
+  margin: 6px 0 12px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.zxe-load-error button {
+  padding: 6px 12px;
+  border: 1px solid var(--red);
+  border-radius: 7px;
+  color: var(--red);
+  font-size: 12px;
+}
+
+/* 只读 */
+.zxe--readonly .zxe-block-control,
+.zxe--readonly .zxe-row-index {
+  display: none;
+}
+
+.zxe--readonly .zxe-row:hover {
+  background: transparent;
+}
+
+.zxe--readonly .zxe-inline {
+  caret-color: transparent;
+}
+
+.zxe--readonly .zxe-status {
+  padding-top: 8px;
+}
+
+/* 深色主题与浅色一致：hover/当前块只用左侧竖线，不铺整行背景。 */
+
+/* 块级 `⋯` 菜单：低频设置不占块头部（ZX-DESIGN-08）。 */
+.zxe-overflow {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+}
+
+.zxe-overflow-trigger {
+  display: inline-flex;
+  min-width: 24px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-6);
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.zxe-overflow-trigger:hover,
+.zxe-overflow-trigger[aria-expanded='true'] {
+  border-color: var(--line);
+  background: var(--surface-3);
+  color: var(--ink);
+}
+
+.zxe-overflow-trigger:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
+.zxe-overflow-menu {
+  position: fixed;
+  /* 工具条 portal 到 body 后 z-index 为 300；菜单必须在其上（ZX7-DESIGN-01 §1.6）。 */
+  z-index: var(--z-menu, 420);
+  display: flex;
+  width: 188px;
+  max-height: min(72vh, 420px);
+  flex-direction: column;
+  padding: 5px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-popover);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.zxe-overflow-item {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: var(--radius-6);
+  color: var(--ink);
+  font-size: 11.5px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.zxe-overflow-item:hover:not([aria-disabled='true']),
+.zxe-overflow-item:focus-visible {
+  background: var(--surface-2);
+}
+
+.zxe-overflow-item:disabled,
+.zxe-overflow-item[aria-disabled='true'] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.zxe-overflow-separator {
+  height: 1px;
+  margin: 4px 2px;
+  background: var(--line);
+}
+
+.zxe-overflow-check {
+  color: var(--accent-ink);
+}
+
+.zxe-formula-actions .zxe-overflow-trigger {
+  height: 23px;
+  padding: 0 6px;
+  border-color: transparent;
+  font-size: 10.5px;
+}
+
+/* ------------------------------------------------------------------ */
+/* 编辑器右键菜单（ZX6-MENU-01）                                        */
+/* ------------------------------------------------------------------ */
+
+/*
+ * 复用知识页 ContextMenu 的 portal / clamp / 键盘逻辑，只在编辑器里
+ * 提升层级并约束窄窗宽度；表格工具条、格式条在菜单打开时收起。
+ * 600 高于编辑器浮层与画板菜单，低于模态（1200）。
+ */
+.zxe-context-menu.kn-context-menu {
+  --z-context: 600;
+  z-index: var(--z-context);
+  width: min(248px, calc(100vw - 16px));
+  max-height: min(420px, calc(100dvh - 16px));
+  overscroll-behavior: contain;
+}
+
+.zxe-context-menu .kn-menu-item {
+  min-height: 30px;
+  padding: 5px var(--space-2);
+  border-radius: var(--radius-6);
+}
+
+.zxe-context-menu .kn-menu-item[aria-disabled='true'] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.zxe-context-menu .kn-menu-shortcut {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: var(--text-9-5);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.zxe-context-menu .kn-menu-arrow {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: var(--text-9-5);
+  line-height: 1;
+}
+
+.zxe-context-menu .kn-menu-arrow + .kn-menu-shortcut,
+.zxe-context-menu .kn-menu-item.has-submenu .kn-menu-shortcut {
+  margin-left: 0;
+}
+
+.zxe-context-menu .kn-menu-item[aria-pressed='true'] .kn-menu-label,
+.zxe-context-menu .kn-menu-item[aria-checked='true'] .kn-menu-label {
+  color: var(--accent-ink);
+  font-weight: var(--weight-semibold);
+}
+
+.zxe-context-menu .kn-menu-item[aria-pressed='true']::after {
+  content: '✓';
+  order: 3;
+  color: var(--accent-ink);
+  font-size: var(--text-11);
+}
+
+.zxe-context-menu .kn-menu-check {
+  order: 3;
+  color: var(--accent-ink);
+  font-size: var(--text-11);
+  line-height: 1;
+}
+
+/* 一层子菜单：fixed 定位，单独做左右/上下翻转，不参与主菜单滚动。 */
+.kn-context-submenu {
+  z-index: 601;
+  width: min(248px, calc(100vw - 16px));
+  max-height: min(420px, calc(100dvh - 16px));
+  padding: 5px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-popover);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.kn-context-submenu .kn-menu-item {
+  display: flex;
+  width: 100%;
+  min-height: 30px;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 5px var(--space-2);
+  border-radius: var(--radius-6);
+  color: var(--ink);
+  font-size: var(--text-11-5);
+  text-align: left;
+}
+
+.kn-context-submenu .kn-menu-item:hover,
+.kn-context-submenu .kn-menu-item:focus-visible {
+  background: var(--surface-2);
+}
+
+.kn-context-submenu .kn-menu-item[aria-disabled='true'] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.kn-context-submenu .kn-menu-item.is-danger {
+  color: var(--red);
+}
+
+.kn-context-submenu .kn-menu-item.is-danger .kn-menu-icon {
+  color: var(--red);
+}
+
+.kn-context-submenu .kn-menu-icon {
+  width: var(--space-4);
+  flex: none;
+  color: var(--muted);
+  text-align: center;
+}
+
+.kn-context-submenu .kn-menu-label {
+  min-width: 0;
+  flex: 1;
+}
+
+.kn-context-submenu .kn-menu-shortcut {
+  margin-left: auto;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-9-5);
+  white-space: nowrap;
+}
+
+.kn-context-submenu .kn-menu-divider {
+  height: 1px;
+  margin: var(--space-1) var(--space-1-5);
+  background: var(--line);
+}

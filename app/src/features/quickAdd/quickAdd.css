@@ -1,0 +1,194 @@
+/* ⌘N 快速创建：任务 / 笔记两个页签，字段与任务详情保持一致。 */
+
+.quickadd-dialog {
+  width: min(560px, 100%);
+}
+
+.quickadd-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 17px 18px 0;
+}
+
+.quickadd-tabs {
+  display: inline-flex;
+  flex: none;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-2);
+}
+
+.quickadd-tab {
+  min-height: 25px;
+  padding: 0 10px;
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 11.5px;
+  font-weight: 550;
+}
+
+.quickadd-tab:hover {
+  color: var(--ink);
+}
+
+.quickadd-tab.is-active {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-sm);
+}
+
+.quickadd-body {
+  min-height: 200px;
+  padding: 14px 18px 16px;
+  overflow: auto;
+}
+
+.quickadd-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.quickadd-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+}
+
+.quickadd-field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.quickadd-field > span {
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+/* 与任务表单同一套控件基线：高度/圆角/边框/字号/内边距全部来自令牌。 */
+.quickadd-field input,
+.quickadd-field select {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: var(--control-h);
+  padding: 0 var(--space-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-button);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--text-control);
+  line-height: 1.45;
+}
+
+.quickadd-field input:focus,
+.quickadd-field select:focus {
+  border-color: var(--focus-ring);
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.quickadd-field input:disabled,
+.quickadd-field select:disabled {
+  color: var(--muted);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.quickadd-field--full {
+  grid-column: 1 / -1;
+}
+
+.quickadd-hint,
+.quickadd-warning,
+.quickadd-error {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.quickadd-hint {
+  color: var(--muted);
+}
+
+.quickadd-warning {
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--amber-soft);
+  color: var(--ink);
+}
+
+.quickadd-error {
+  padding: 7px 9px;
+  border: 1px solid var(--red);
+  border-radius: 7px;
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.quickadd-state {
+  display: flex;
+  min-height: 185px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 22px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.65;
+  text-align: center;
+}
+
+.quickadd-state b {
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.quickadd-state p {
+  max-width: 390px;
+  margin: 0;
+}
+
+.quickadd-state code {
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: var(--surface-3);
+  font: 11px/1.5 var(--font-mono);
+}
+
+.quickadd-state-mark {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  margin-bottom: 6px;
+  place-items: center;
+  border-radius: 11px;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 15px;
+  font-weight: 650;
+}
+
+@media (max-width: 560px) {
+  .quickadd-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .quickadd-tabs {
+    align-self: flex-start;
+  }
+
+  .quickadd-row {
+    grid-template-columns: 1fr;
+  }
+}

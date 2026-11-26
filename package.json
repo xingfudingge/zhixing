@@ -1,0 +1,19 @@
+{
+  "name": "zhixing",
+  "version": "0.2.0",
+  "private": true,
+  "license": "MIT",
+  "description": "知行 · 单用户个人任务与知识管理桌面应用",
+  "packageManager": "pnpm@12.15.0",
+  "scripts": {
+    "dev": "pnpm --filter app dev",
+    "build": "pnpm --filter app build",
+    "test": "pnpm --filter app test",
+    "test:rust": "pnpm --filter app test:rust",
+    "lint:rust": "pnpm --filter app lint:rust",
+    "check": "pnpm --filter app typecheck && pnpm --filter app test",
+    "tauri": "pnpm --filter app tauri",
+    "tauri:dev": "pnpm --filter app tauri dev",
+    "tauri:build": "pnpm --filter app tauri build"
+  }
+}

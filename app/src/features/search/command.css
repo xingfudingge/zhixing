@@ -1,0 +1,211 @@
+/*
+ * ⌘K / ⌘N / ? 共用模态外观。
+ * 只使用 tokens.css 的全局 token，不引入第二套主色。
+ */
+
+.command-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: max(56px, 9vh) 18px 28px;
+  background: rgba(17, 23, 34, 0.34);
+  backdrop-filter: blur(2px);
+}
+
+:root[data-theme='dark'] .command-overlay {
+  background: rgba(5, 8, 13, 0.62);
+}
+
+.command-dialog {
+  display: flex;
+  flex-direction: column;
+  width: min(680px, 100%);
+  max-height: min(78vh, 760px);
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow:
+    0 24px 70px rgba(20, 28, 44, 0.24),
+    0 3px 10px rgba(20, 28, 44, 0.08);
+  outline: none;
+}
+
+.command-dialog__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px 0;
+}
+
+.command-dialog__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+}
+
+.command-dialog__desc {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.command-dialog__body {
+  min-height: 0;
+  padding: 14px 18px 18px;
+  overflow: auto;
+}
+
+.command-dialog__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 18px;
+  border-top: 1px solid var(--line);
+  background: var(--surface-2);
+}
+
+.command-dialog__hint {
+  margin-right: auto;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.command-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 13px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 550;
+  transition:
+    background var(--motion-fast) ease,
+    border-color var(--motion-fast) ease;
+}
+
+.command-button:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.command-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.command-button--primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.command-button--primary:hover {
+  border-color: var(--accent-ink);
+  background: var(--accent-ink);
+}
+
+.command-icon-button {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  place-items: center;
+  border-radius: 8px;
+  color: var(--muted);
+}
+
+.command-icon-button:hover {
+  background: var(--surface-3);
+  color: var(--ink);
+}
+
+.command-kbd {
+  display: inline-flex;
+  align-items: center;
+  min-height: 19px;
+  padding: 0 5px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--surface);
+  color: var(--muted);
+  font: 10px/1 var(--font-mono);
+  letter-spacing: 0.02em;
+}
+
+.command-state {
+  padding: 30px 18px;
+  text-align: center;
+}
+
+.command-state__mark {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  margin: 0 auto 10px;
+  place-items: center;
+  border-radius: 11px;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.command-state h2 {
+  margin: 0 0 5px;
+  font-size: 14px;
+}
+
+.command-state p {
+  max-width: 430px;
+  margin: 0 auto;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.command-state code {
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: var(--surface-3);
+  font: 11px/1.5 var(--font-mono);
+}
+
+.command-state__action {
+  margin-top: 12px;
+}
+
+@media (max-width: 720px) {
+  .command-overlay {
+    padding: 24px 10px;
+  }
+
+  .command-dialog {
+    max-height: 88vh;
+  }
+
+  .command-dialog__body {
+    padding: 12px 13px 15px;
+  }
+
+  .command-dialog__head,
+  .command-dialog__footer {
+    padding-right: 13px;
+    padding-left: 13px;
+  }
+}

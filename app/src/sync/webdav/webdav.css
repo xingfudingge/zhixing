@@ -1,0 +1,360 @@
+/* WebDAV 设置面板：沿用知行 design token，不引入为知配色。 */
+
+.webdav-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md, 12px);
+  background: var(--surface);
+}
+
+.webdav-panel-blocked {
+  background: var(--surface-2);
+}
+
+.webdav-panel-blocked p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.webdav-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.webdav-head h3,
+.webdav-panel-blocked h3 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 15px;
+}
+
+.webdav-head p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 1.55;
+}
+
+.webdav-platform {
+  padding: 3px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 10.5px;
+  white-space: nowrap;
+}
+
+.webdav-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
+}
+
+.webdav-field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.webdav-field-wide {
+  grid-column: 1 / -1;
+}
+
+.webdav-field > span {
+  color: var(--muted);
+  font-size: 10.5px;
+}
+
+.webdav-field input {
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+}
+
+.webdav-field input:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 1px;
+}
+
+.webdav-field small {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.webdav-actions,
+.webdav-dialog-actions {
+  display: flex;
+  grid-column: 1 / -1;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.webdav-button {
+  padding: 7px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--ink);
+  font: inherit;
+  font-size: 11.5px;
+  cursor: pointer;
+}
+
+.webdav-button:hover:not(:disabled) {
+  border-color: var(--blue);
+}
+
+.webdav-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.webdav-button.is-primary {
+  border-color: var(--blue);
+  background: var(--blue);
+  color: #fff;
+}
+
+.webdav-button.is-danger {
+  border-color: var(--red);
+  background: var(--red);
+  color: #fff;
+}
+
+.webdav-alert,
+.webdav-notice {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 9px 11px;
+  border-radius: 8px;
+  font-size: 11.5px;
+}
+
+.webdav-alert {
+  border: 1px solid var(--red);
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.webdav-alert small {
+  color: var(--muted);
+  font-size: 10.5px;
+}
+
+.webdav-notice {
+  border: 1px solid var(--line);
+  background: var(--blue-soft);
+  color: var(--ink);
+}
+
+.webdav-checks {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-2);
+}
+
+.webdav-result {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.webdav-result.is-ok {
+  color: var(--green, #2f8a5b);
+}
+
+.webdav-result.is-failed {
+  color: var(--red);
+}
+
+.webdav-result span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 400;
+}
+
+.webdav-checks ul {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  flex-direction: column;
+  gap: 5px;
+  list-style: none;
+}
+
+.webdav-checks li {
+  display: grid;
+  grid-template-columns: 10px minmax(120px, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.webdav-checks li small {
+  grid-column: 2 / -1;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.webdav-checks li em {
+  color: var(--muted);
+  font-size: 10px;
+  font-style: normal;
+}
+
+.webdav-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+
+.webdav-dot.is-ok {
+  background: var(--green, #2f8a5b);
+}
+
+.webdav-dot.is-failed {
+  background: var(--red);
+}
+
+.webdav-modes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 6px;
+  border-top: 1px solid var(--line);
+}
+
+.webdav-modes header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.webdav-modes h4 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 12.5px;
+}
+
+.webdav-modes header span,
+.webdav-hint {
+  color: var(--muted);
+  font-size: 10.5px;
+}
+
+.webdav-pending {
+  margin: 0;
+  padding: 7px 9px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--ink);
+  font-size: 11px;
+}
+
+.webdav-mode-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.webdav-mode {
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.webdav-mode.is-active {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+  color: var(--ink);
+  cursor: default;
+}
+
+.webdav-mode:disabled:not(.is-active) {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.webdav-hint {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.webdav-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  padding: 24px;
+  place-items: center;
+  background: rgb(15 18 24 / 42%);
+}
+
+.webdav-dialog {
+  width: min(440px, 100%);
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md, 12px);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg, 0 18px 48px rgb(0 0 0 / 22%));
+}
+
+.webdav-dialog h4 {
+  margin: 0 0 8px;
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.webdav-dialog p {
+  margin: 0 0 8px;
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.webdav-dialog ul {
+  margin: 0 0 10px;
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: 10.5px;
+  line-height: 1.6;
+}
+
+.webdav-confirm {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin-bottom: 12px;
+  color: var(--ink);
+  font-size: 11px;
+}

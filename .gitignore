@@ -1,0 +1,12 @@
+.DS_Store
+node_modules/
+work/
+*.log
+app/src-tauri/target/
+app/dist/
+outputs/*.dmg
+outputs/安装包信息.json
+tests/evidence/
+
+# 私钥/证书永远不入库
+*.pem

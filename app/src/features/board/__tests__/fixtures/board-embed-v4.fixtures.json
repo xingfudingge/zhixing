@@ -1,0 +1,158 @@
+{
+  "source": "outputs/画板嵌入与模板交互-v4.md §8",
+  "coordinateContract": "screen = (world - view) * zoom",
+  "padding": 24,
+  "minHeight": 240,
+  "maxHeight": 560,
+  "maxZoom": 2,
+  "cases": [
+    {
+      "id": "seed",
+      "label": "种子笔记",
+      "bbox": { "x": 100, "y": 90, "width": 670, "height": 84 },
+      "containerWidth": 802,
+      "expected": {
+        "height": 240,
+        "zoom": 1.116992,
+        "view": { "x": 76.0, "y": 24.569 },
+        "screen": { "left": 26.808, "top": 73.086, "right": 775.192, "bottom": 166.914 },
+        "pads": { "left": 26.808, "right": 26.808, "top": 73.086, "bottom": 73.086 },
+        "centerError": 0
+      }
+    },
+    {
+      "id": "sys",
+      "label": "系统架构",
+      "bbox": { "x": 0, "y": 0, "width": 760, "height": 440 },
+      "containerWidth": 802,
+      "expected": {
+        "height": 484,
+        "zoom": 0.991803,
+        "view": { "x": -24.314, "y": -24.0 },
+        "screen": { "left": 24.115, "top": 23.803, "right": 777.885, "bottom": 460.197 },
+        "pads": { "left": 24.115, "right": 24.115, "top": 23.803, "bottom": 23.803 },
+        "centerError": 0
+      }
+    },
+    {
+      "id": "tall",
+      "label": "纵向很高",
+      "bbox": { "x": 0, "y": 0, "width": 200, "height": 2000 },
+      "containerWidth": 800,
+      "expected": {
+        "height": 560,
+        "zoom": 0.273438,
+        "view": { "x": -1362.857, "y": -24.0 },
+        "screen": { "left": 372.656, "top": 6.562, "right": 427.344, "bottom": 553.438 },
+        "pads": { "left": 372.656, "right": 372.656, "top": 6.562, "bottom": 6.562 },
+        "centerError": 0
+      }
+    },
+    {
+      "id": "wide",
+      "label": "横向很宽",
+      "bbox": { "x": 0, "y": 0, "width": 2000, "height": 200 },
+      "containerWidth": 800,
+      "expected": {
+        "height": 240,
+        "zoom": 0.390625,
+        "view": { "x": -24.0, "y": -207.2 },
+        "screen": { "left": 9.375, "top": 80.938, "right": 790.625, "bottom": 159.062 },
+        "pads": { "left": 9.375, "right": 9.375, "top": 80.938, "bottom": 80.938 },
+        "centerError": 0
+      }
+    },
+    {
+      "id": "tiny",
+      "label": "极小内容",
+      "bbox": { "x": 0, "y": 0, "width": 20, "height": 20 },
+      "containerWidth": 800,
+      "expected": {
+        "height": 560,
+        "zoom": 2.0,
+        "view": { "x": -190.0, "y": -130.0 },
+        "screen": { "left": 380.0, "top": 260.0, "right": 420.0, "bottom": 300.0 },
+        "pads": { "left": 380.0, "right": 380.0, "top": 260.0, "bottom": 260.0 },
+        "centerError": 0
+      }
+    },
+    {
+      "id": "negative",
+      "label": "负坐标",
+      "bbox": { "x": -500, "y": -300, "width": 400, "height": 200 },
+      "containerWidth": 800,
+      "expected": {
+        "height": 443,
+        "zoom": 1.785714,
+        "view": { "x": -524.0, "y": -324.04 },
+        "screen": { "left": 42.857, "top": 42.929, "right": 757.143, "bottom": 400.071 },
+        "pads": { "left": 42.857, "right": 42.857, "top": 42.929, "bottom": 42.929 },
+        "centerError": 0
+      }
+    },
+    {
+      "id": "zero",
+      "label": "零尺寸保护",
+      "bbox": { "x": 50, "y": 50, "width": 0, "height": 0 },
+      "containerWidth": 800,
+      "expected": {
+        "height": 560,
+        "zoom": 2.0,
+        "view": { "x": -150.0, "y": -90.0 },
+        "screen": { "left": 400.0, "top": 280.0, "right": 400.0, "bottom": 280.0 },
+        "pads": { "left": 400.0, "right": 400.0, "top": 280.0, "bottom": 280.0 },
+        "centerError": 0
+      }
+    },
+    {
+      "id": "narrow",
+      "label": "窄窗 320",
+      "bbox": { "x": 0, "y": 0, "width": 760, "height": 440 },
+      "containerWidth": 320,
+      "expected": {
+        "height": 240,
+        "zoom": 0.39604,
+        "view": { "x": -24.0, "y": -83.0 },
+        "screen": { "left": 9.505, "top": 32.871, "right": 310.495, "bottom": 207.129 },
+        "pads": { "left": 9.505, "right": 9.505, "top": 32.871, "bottom": 32.871 },
+        "centerError": 0
+      }
+    },
+    {
+      "id": "huge",
+      "label": "超大画板",
+      "bbox": { "x": 0, "y": 0, "width": 4000, "height": 3000 },
+      "containerWidth": 800,
+      "expected": {
+        "height": 560,
+        "zoom": 0.183727,
+        "view": { "x": -177.143, "y": -24.0 },
+        "screen": { "left": 32.546, "top": 4.409, "right": 767.454, "bottom": 555.591 },
+        "pads": { "left": 32.546, "right": 32.546, "top": 4.409, "bottom": 4.409 },
+        "centerError": 0
+      }
+    },
+    {
+      "id": "fractional",
+      "label": "分数宽度",
+      "bbox": { "x": 100, "y": 90, "width": 670, "height": 84 },
+      "containerWidth": 801.5,
+      "expected": {
+        "height": 240,
+        "zoom": 1.116295,
+        "view": { "x": 76.0, "y": 24.502 },
+        "screen": { "left": 26.791, "top": 73.116, "right": 774.709, "bottom": 166.884 },
+        "pads": { "left": 26.791, "right": 26.791, "top": 73.116, "bottom": 73.116 },
+        "centerError": 0
+      }
+    }
+  ],
+  "legacyComparison": {
+    "case": "sys",
+    "containerWidth": 802,
+    "legacyView": { "x": 24.115, "y": 23.803 },
+    "fixedView": { "x": -24.314, "y": -24.0 },
+    "screenCenter": { "legacy": { "x": 352.968, "y": 194.588 }, "fixed": { "x": 401, "y": 242 } },
+    "centerError": { "legacy": 55.5, "fixed": 0 }
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "name": "@zhixing/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "知行后台同步服务（Fastify 5 + PostgreSQL 16 + MinIO）",
+  "engines": {
+    "node": ">=20.11"
+  },
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "dev": "tsx watch src/index.ts",
+    "migrate": "tsx src/db/migrate-cli.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:unit": "vitest run test/unit",
+    "test:integration": "vitest run test/integration",
+    "acceptance": "tsx scripts/acceptance.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "3.1156.0",
+    "@aws-sdk/s3-request-presigner": "3.1156.0",
+    "fastify": "5.12.7",
+    "pg": "8.23.1",
+    "tsx": "4.23.15",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.5",
+    "@types/pg": "8.23.1",
+    "typescript": "5.9.3",
+    "vitest": "4.1.12"
+  }
+}

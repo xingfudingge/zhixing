@@ -1,0 +1,795 @@
+/* 专注域：计时卡、统计、补记与白噪音。只使用全局 design token。 */
+
+.focus-page {
+  display: flex;
+  width: 100%;
+  max-width: 1180px;
+  min-width: 0;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0 auto;
+}
+
+/* ---------- 页头 ---------- */
+.focus-head {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.focus-eyebrow {
+  margin: 0 0 6px;
+  color: var(--accent-ink);
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.focus-head h1 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+
+.focus-sub {
+  max-width: 700px;
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.65;
+}
+
+.focus-head-meta {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  padding-top: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- 提示条 ---------- */
+.focus-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.focus-banner strong {
+  flex: none;
+  font-weight: 650;
+}
+
+.focus-banner--danger {
+  border-color: var(--red);
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+/* ---------- 布局 ---------- */
+.focus-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(270px, 0.85fr);
+  align-items: start;
+  gap: 14px;
+}
+
+.focus-main,
+.focus-side {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ---------- 计时卡 ---------- */
+.focus-timer-card {
+  padding: 24px 24px 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background:
+    radial-gradient(
+      120% 90% at 50% 0%,
+      var(--accent-soft) 0%,
+      transparent 62%
+    ),
+    var(--surface);
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+}
+
+.focus-modes {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 9px;
+  background: var(--surface-3);
+}
+
+.focus-mode {
+  padding: 5px 13px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 550;
+  line-height: 1.4;
+}
+
+.focus-mode:hover:not(:disabled) {
+  color: var(--ink);
+}
+
+.focus-mode.is-active {
+  background: var(--surface);
+  color: var(--accent-ink);
+  box-shadow: var(--shadow-sm);
+}
+
+.focus-mode:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.focus-phase {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 14px;
+  padding: 3px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.focus-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--line-strong);
+}
+
+.focus-dot.is-running {
+  background: var(--amber);
+  box-shadow: 0 0 0 3px var(--amber-soft);
+}
+
+.focus-round-label {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.focus-task-title {
+  margin: 13px 0 0;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.focus-task-sub {
+  min-height: 18px;
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 10.5px;
+  line-height: 1.55;
+}
+
+.focus-clock {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  margin: 10px 0 2px;
+  color: var(--accent-ink);
+  font-family: var(--font-mono);
+  font-size: clamp(54px, 8.4vw, 76px);
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.06em;
+  line-height: 1;
+  user-select: none;
+}
+
+.focus-clock-colon {
+  position: relative;
+  margin: 0 2px;
+  color: var(--muted);
+  font-size: 0.44em;
+  letter-spacing: 0;
+  transform: translateY(-0.16em);
+}
+
+.focus-rounds {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.focus-round-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--surface-3);
+  transition: background var(--motion-fast) ease;
+}
+
+.focus-round-dot.is-done {
+  background: var(--amber);
+}
+
+.focus-round-dot.is-current {
+  box-shadow: 0 0 0 2px var(--amber-soft);
+}
+
+.focus-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 18px;
+}
+
+.focus-btn {
+  display: inline-flex;
+  height: 30px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0 13px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 550;
+  line-height: 1;
+  white-space: nowrap;
+  transition:
+    background var(--motion-fast) ease,
+    border-color var(--motion-fast) ease,
+    color var(--motion-fast) ease;
+}
+
+.focus-btn:hover:not(:disabled) {
+  border-color: var(--line-strong);
+  background: var(--surface-2);
+}
+
+.focus-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.focus-btn--primary {
+  border-color: transparent;
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.focus-btn--primary:hover:not(:disabled) {
+  border-color: transparent;
+  background: var(--accent-ink);
+  color: var(--on-accent);
+}
+
+.focus-btn--lg {
+  height: 36px;
+  padding: 0 20px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.focus-inline-error {
+  margin: 12px auto 0;
+  padding: 7px 10px;
+  border: 1px solid var(--red);
+  border-radius: 7px;
+  background: var(--red-soft);
+  color: var(--red);
+  font-size: 10.5px;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.focus-task-select {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 14px;
+}
+
+.focus-task-select label {
+  color: var(--muted);
+  font-size: 10.5px;
+  white-space: nowrap;
+}
+
+.focus-task-select select {
+  min-width: 230px;
+  max-width: 100%;
+  height: 28px;
+  padding: 0 7px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 11px;
+}
+
+.focus-config {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.focus-config label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.focus-config select {
+  height: 25px;
+  padding: 0 3px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 10px;
+}
+
+.focus-config select:disabled,
+.focus-check input:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.focus-check {
+  cursor: pointer;
+}
+
+.focus-check input {
+  width: 12px;
+  height: 12px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.focus-config-hint {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.focus-note {
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 9.5px;
+  line-height: 1.6;
+}
+
+/* ---------- 通用面板 ---------- */
+.focus-panel {
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.focus-panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.focus-panel-head h3 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 12.5px;
+  font-weight: 650;
+  letter-spacing: -0.005em;
+}
+
+.focus-panel-head > span {
+  color: var(--muted);
+  font-size: 9.5px;
+  white-space: nowrap;
+}
+
+.focus-panel-sub {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 9.5px;
+  line-height: 1.6;
+}
+
+.focus-panel > p {
+  margin: 5px 0 0;
+}
+
+/* ---------- 统计 ---------- */
+.focus-today {
+  display: flex;
+  flex-direction: column;
+  padding: 16px 18px;
+}
+
+.focus-today small {
+  color: var(--muted);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.focus-today > b {
+  margin: 3px 0 5px;
+  color: var(--ink);
+  font-size: 27px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+}
+
+.focus-today > span {
+  color: var(--muted);
+  font-size: 9.5px;
+}
+
+.focus-today > span b {
+  color: var(--ink);
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.focus-recent {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.focus-session-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 0;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 9.5px;
+}
+
+.focus-session-row:first-child {
+  border-top: 0;
+}
+
+.focus-session-row b {
+  flex: 1;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 10.5px;
+  font-weight: 550;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.focus-session-row > span {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.focus-session-date {
+  color: var(--muted);
+}
+
+.focus-tag {
+  flex: none;
+  padding: 1px 5px;
+  border: 1px solid var(--amber);
+  border-radius: 999px;
+  background: var(--amber-soft);
+  color: var(--amber);
+  font-size: 8.5px;
+  font-style: normal;
+  line-height: 1.4;
+}
+
+.focus-empty {
+  margin: 10px 0 2px;
+  color: var(--muted);
+  font-size: 10.5px;
+}
+
+/* ---------- 手动补记 ---------- */
+.focus-manual {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.focus-manual > label {
+  flex: none;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.focus-manual-row {
+  display: flex;
+  flex: 1;
+  gap: 6px;
+  min-width: 0;
+}
+
+.focus-manual-row input {
+  width: 100%;
+  min-width: 0;
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface-2);
+  color: var(--ink);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.focus-manual-row input:focus-visible {
+  border-color: var(--focus-ring);
+}
+
+/* ---------- 白噪音 ---------- */
+.focus-noise-state {
+  color: var(--muted);
+  font-size: 9.5px;
+}
+
+.focus-noise-state.is-playing {
+  color: var(--teal);
+  font-weight: 600;
+}
+
+.focus-noise-desc {
+  max-width: 560px;
+}
+
+.focus-noise-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 7px 9px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 9.5px;
+  line-height: 1.55;
+}
+
+.focus-noise-hint > span {
+  flex: 1;
+  min-width: 0;
+}
+
+.focus-noise-hint-close {
+  flex: none;
+  padding: 2px 7px;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 9.5px;
+  line-height: 1.5;
+  transition:
+    border-color var(--motion-fast) ease,
+    color var(--motion-fast) ease;
+}
+
+.focus-noise-hint-close:hover {
+  border-color: var(--teal);
+  color: var(--teal);
+}
+
+.focus-noise-hint-close:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
+.focus-noise-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.focus-noise-button {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 4px 9px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 10px;
+  line-height: 1.5;
+  transition:
+    background var(--motion-fast) ease,
+    border-color var(--motion-fast) ease,
+    color var(--motion-fast) ease;
+}
+
+.focus-noise-button-hint {
+  color: var(--muted);
+  font-size: 8.5px;
+  font-weight: 400;
+  opacity: 0.85;
+}
+
+.focus-noise-button.is-active .focus-noise-button-hint {
+  color: var(--teal);
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+.focus-noise-button:hover {
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+
+.focus-noise-button.is-active {
+  border-color: var(--teal);
+  background: var(--teal-soft);
+  color: var(--teal);
+  font-weight: 600;
+}
+
+.focus-volume {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 9.5px;
+}
+
+.focus-volume input {
+  flex: 1;
+  height: 3px;
+  min-width: 0;
+  padding: 0;
+  accent-color: var(--teal);
+}
+
+.focus-volume span {
+  min-width: 30px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* ---------- Toast ---------- */
+.focus-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  z-index: 120;
+  max-width: min(92vw, 460px);
+  padding: 9px 14px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--ink);
+  color: var(--surface);
+  font-size: 11.5px;
+  line-height: 1.5;
+  box-shadow: var(--shadow);
+  transform: translateX(-50%);
+}
+
+.focus-toast--success {
+  border-color: var(--green);
+  background: var(--green);
+  color: #fff;
+}
+
+.focus-toast--danger {
+  border-color: var(--red);
+  background: var(--red);
+  color: #fff;
+}
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 940px) {
+  .focus-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .focus-side {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .focus-today {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 600px) {
+  .focus-head h1 {
+    font-size: 25px;
+  }
+
+  .focus-head-meta {
+    display: none;
+  }
+
+  .focus-timer-card {
+    padding: 20px 14px 15px;
+  }
+
+  .focus-task-select {
+    flex-direction: column;
+  }
+
+  .focus-task-select select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .focus-side {
+    display: flex;
+  }
+
+  .focus-manual {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .focus-manual-row {
+    width: 100%;
+  }
+}

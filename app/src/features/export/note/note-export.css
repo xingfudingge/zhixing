@@ -1,0 +1,262 @@
+/*
+ * 单篇笔记导出面板（ZX-EXPORT-01）。
+ * 只使用全局 design token：--surface / --ink / --muted / --line / --blue。
+ */
+
+.kn-paper-head {
+  position: relative;
+}
+
+.kn-export-trigger {
+  position: absolute;
+  top: 22px;
+  right: var(--kn-paper-inline);
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  gap: 4px;
+  padding: 0 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-button);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: var(--text-10-5);
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.kn-export-trigger:hover {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+  color: var(--blue-ink);
+}
+
+.kn-export-trigger:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.kx-export-modal {
+  width: min(640px, calc(100vw - 32px));
+  max-height: min(88vh, 760px);
+}
+
+.kx-export-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.kx-export-fieldset {
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+.kx-export-fieldset > legend {
+  padding: 0;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: var(--text-10-5);
+  font-weight: 600;
+}
+
+.kx-export-formats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.kx-export-format {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  cursor: pointer;
+}
+
+.kx-export-format:hover {
+  border-color: var(--line-strong);
+  background: var(--surface-3);
+}
+
+.kx-export-format:has(input:checked) {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+  box-shadow: inset 0 0 0 1px var(--blue);
+}
+
+.kx-export-format input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.kx-export-format:has(input:focus-visible) {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.kx-export-format strong {
+  color: var(--ink);
+  font-size: var(--text-11-5);
+  font-weight: 700;
+}
+
+.kx-export-format span {
+  color: var(--muted);
+  font-size: var(--text-10);
+  line-height: 1.5;
+}
+
+.kx-export-format em {
+  color: var(--blue-ink);
+  font-size: var(--text-10);
+  font-style: normal;
+  font-weight: 600;
+}
+
+.kx-export-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+
+.kx-export-options label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--ink);
+  font-size: var(--text-10-5);
+  line-height: 1.5;
+}
+
+.kx-export-options input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--blue);
+}
+
+.kx-export-options select {
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-button);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--text-10-5);
+}
+
+.kx-export-limit {
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--amber) 28%, var(--line));
+  border-radius: var(--radius-sm);
+  background: var(--amber-soft);
+  color: var(--amber-ink, var(--ink));
+  font-size: var(--text-10-5);
+  line-height: 1.6;
+}
+
+.kx-export-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-10-5);
+  line-height: 1.6;
+}
+
+.kx-export-outline {
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-3);
+  color: var(--ink);
+  font-size: var(--text-10-5);
+  line-height: 1.6;
+}
+
+.kx-export-result-file {
+  margin: 8px 0 4px;
+  color: var(--ink);
+  font-size: var(--text-13);
+  font-weight: 700;
+}
+
+.kx-export-result-path {
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--muted);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: var(--text-10-5);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.kx-export-rename {
+  margin: 8px 0 0;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--blue-soft);
+  color: var(--blue-ink);
+  font-size: var(--text-10-5);
+  line-height: 1.5;
+}
+
+.kx-export-warnings {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--amber) 26%, var(--line));
+  border-radius: var(--radius-sm);
+  background: var(--amber-soft);
+}
+
+.kx-export-warnings h3 {
+  margin: 0 0 6px;
+  color: var(--ink);
+  font-size: var(--text-10-5);
+  font-weight: 700;
+}
+
+.kx-export-warnings ul {
+  max-height: 176px;
+  margin: 0;
+  padding-left: 18px;
+  overflow: auto;
+  color: var(--ink);
+  font-size: var(--text-10);
+  line-height: 1.65;
+}
+
+@media (max-width: 720px) {
+  .kn-export-trigger {
+    position: static;
+    margin-top: 8px;
+  }
+
+  .kx-export-modal {
+    width: calc(100vw - 20px);
+    max-height: calc(100vh - 24px);
+  }
+
+  .kx-export-formats {
+    grid-template-columns: 1fr;
+  }
+}

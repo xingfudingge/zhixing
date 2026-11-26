@@ -1,0 +1,141 @@
+/* 可访问模态与视觉隐藏工具（P2-04）。只使用全局 design token。 */
+
+.zx-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 32px 20px;
+  overflow: auto;
+  background: rgba(23, 28, 38, 0.48);
+  backdrop-filter: blur(2px);
+}
+
+.zx-modal-shell {
+  width: 100%;
+  max-width: 760px;
+  outline: none;
+}
+
+.zx-modal {
+  display: flex;
+  width: 100%;
+  max-height: calc(100vh - 64px);
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  color: var(--ink);
+}
+
+.zx-modal-shell--lg {
+  max-width: 960px;
+}
+
+.zx-modal--lg {
+  max-width: 960px;
+}
+
+.zx-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.zx-modal-heading {
+  min-width: 0;
+}
+
+.zx-modal-heading h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.zx-modal-description {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+.zx-modal-close {
+  display: inline-flex;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 21px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.zx-modal-close:hover:not(:disabled) {
+  border-color: var(--line);
+  background: var(--surface-3);
+  color: var(--ink);
+}
+
+.zx-modal-close:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.zx-modal-body {
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+  padding: 18px 20px;
+}
+
+.zx-modal-foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--line);
+  background: var(--surface-2);
+}
+
+.zx-modal :is(button, input, select, textarea, a, [tabindex]):focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.zx-visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  border: 0;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .zx-modal-backdrop {
+    padding: 12px;
+  }
+
+  .zx-modal {
+    max-height: calc(100vh - 24px);
+  }
+}

@@ -1,0 +1,108 @@
+/* 任务详情新增区块：关联笔记、执行笔记、删除与时间信息。 */
+
+.task-note-section {
+  margin-top: 3px;
+  padding-top: 9px;
+  border-top: 1px solid var(--line);
+}
+
+.task-note-section select {
+  margin-bottom: 2px;
+}
+
+.task-note-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 5px;
+  padding: 7px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-2);
+}
+
+.task-note-card-title {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.task-note-card-meta {
+  color: var(--muted);
+  font-size: 9.5px;
+  line-height: 1.4;
+}
+
+.task-note-open {
+  align-self: flex-start;
+  margin-top: 2px;
+  color: var(--blue-ink);
+  font-size: 10px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.task-note-open:hover {
+  text-decoration: underline;
+}
+
+.task-note-create {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 5px;
+  margin-top: 6px;
+}
+
+.task-note-create label {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: 9.5px;
+  font-weight: 600;
+}
+
+.task-note-create select {
+  min-width: 0;
+  padding: 5px 7px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-2);
+  color: var(--ink);
+  font-size: 10.5px;
+}
+
+.task-note-create .task-button {
+  justify-self: end;
+}
+
+.task-detail-meta time {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.task-attachment-field .zx-attach-panel {
+  padding: 10px;
+  gap: 9px;
+}
+
+.task-attachment-field .zx-attach-card {
+  flex-wrap: wrap;
+  padding: 9px;
+}
+
+.task-attachment-field .zx-attach-actions {
+  justify-content: flex-start;
+}
+
+@media (max-width: 520px) {
+  .task-note-create {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .task-note-create .task-button {
+    justify-self: stretch;
+  }
+}

@@ -1,0 +1,268 @@
+/*
+ * 知行全局 design token。
+ * 数值由知行自有设计系统维护；所有页面只允许使用这一套主色。
+ *
+ * 主题：<html data-theme="light|dark"> 由 shell/appearance.ts 解析后写入；
+ *      偏好为「跟随系统」时会监听 prefers-color-scheme 并重新解析。
+ * 强调色：<html data-accent="blue|violet|coral|teal|amber">，只替换 --blue 系。
+ * 密度：<html data-density="comfortable|compact">，只影响行高与内容区间距。
+ */
+:root {
+  color-scheme: light;
+
+  /* 字体 */
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Microsoft YaHei', sans-serif;
+  --font-mono:
+    'SF Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas,
+    monospace;
+
+  /* 基础表面 */
+  --bg: #f6f7fa;
+  --surface: #ffffff;
+  --surface-2: #fbfcfe;
+  --surface-3: #f1f4f8;
+  --ink: #252c38;
+  --muted: #7f8999;
+  --line: #e7e9ef;
+  --line-strong: #d8dde7;
+
+  /* 强调色（--blue 系是唯一可变主色） */
+  --accent: #5579d5;
+  --accent-soft: #edf2fc;
+  --accent-ink: #3f63b5;
+  --on-accent: #ffffff;
+
+  --blue: var(--accent);
+  --blue-soft: var(--accent-soft);
+  --blue-ink: var(--accent-ink);
+
+  /* 语义色；不随强调色变化 */
+  --violet: #8066c7;
+  --violet-soft: #f2eefb;
+  --coral: #d97664;
+  --coral-soft: #fdf0ed;
+  --teal: #3a9b9a;
+  --teal-soft: #eaf5f4;
+  --amber: #d89338;
+  --amber-soft: #fdf4e6;
+  --green: #2f9e73;
+  --green-soft: #eaf6f0;
+  --red: #cf5f59;
+  --red-soft: #fbeceb;
+
+  /* 交互与形状 */
+  --focus-ring: #8aa6ea;
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+  --shadow: 0 8px 24px rgba(37, 49, 74, 0.06);
+  --shadow-sm: 0 2px 8px rgba(37, 49, 74, 0.05);
+
+  /*
+   * 圆角阶梯（规范 §1.2 / D12）：
+   * 6 标签 / 8 按钮与输入 / 10 对象 / 12 浮层 / 13 卡片 / 16 面板 / 999 胶囊。
+   * --radius / --radius-sm 保留为既有语义别名，避免模块各自写数值。
+   */
+  --radius-6: 6px;
+  --radius-8: 8px;
+  --radius-10: 10px;
+  --radius-12: 12px;
+  --radius-13: 13px;
+  --radius-16: 16px;
+  --radius-pill: 999px;
+  --radius-circle: 50%;
+  --radius: var(--radius-13);
+  --radius-sm: 9px;
+  --radius-md: var(--radius-12);
+  --radius-button: var(--radius-8);
+  --radius-card: var(--radius-13);
+  --radius-panel: var(--radius-16);
+  --radius-popover: var(--radius-12);
+
+  /*
+   * 字号阶梯（规范 §1.2）。模块 CSS 只允许引用变量，不得再写 px。
+   * 组件优先使用下面的语义字号。
+   */
+  --text-9-5: 9.5px;
+  --text-10-5: 10.5px;
+  --text-11: 11px;
+  --text-11-5: 11.5px;
+  --text-12: 12px;
+  --text-12-5: 12.5px;
+  --text-13: 13px;
+  --text-14: 14px;
+  --text-16: 16px;
+  --text-20: 20px;
+  --text-24: 24px;
+
+  /* 页面标题 / 副标题 / 区块标题 / 正文 / 说明 / 控件 / 元信息 */
+  --text-page-title: var(--text-20);
+  --text-page-subtitle: var(--text-12-5);
+  --text-section-title: var(--text-14);
+  --text-card-title: var(--text-13);
+  --text-body: var(--text-13);
+  --text-body-lg: var(--text-14);
+  --text-control: var(--text-12);
+  --text-control-sm: var(--text-11-5);
+  --text-caption: var(--text-11-5);
+  --text-meta: var(--text-10-5);
+  --text-micro: var(--text-9-5);
+  --text-display: var(--text-24);
+
+  /* 字重阶梯（规范 §1.2） */
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-title: 650;
+  --weight-bold: 700;
+
+  /* 间距阶梯（8px 基准） */
+  --space-0-5: 2px;
+  --space-1: 4px;
+  --space-1-5: 6px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* 控件与图标尺寸（规范 §5.1 / §2.1） */
+  --control-h-sm: 28px;
+  --control-h: 32px;
+  --control-h-lg: 36px;
+  --control-pad-x: 12px;
+  --control-pad-x-sm: 8px;
+  --icon-button-sm: 28px;
+  --icon-button: 32px;
+  --icon-button-lg: 36px;
+  --icon-gap: 4px;
+  --icon-xs: 14px;
+  --icon-sm: 16px;
+  --icon-md: 18px;
+  --icon-lg: 20px;
+  --icon-empty: 28px;
+
+  /* 危险确认 / 遮罩 */
+  --on-danger: #ffffff;
+  --danger-hover: #b94f4a;
+  --scrim: rgba(16, 22, 32, 0.38);
+  --scrim-strong: rgba(0, 0, 0, 0.55);
+
+  /* 固定色板：设置里的主题/强调色选择器使用，不随当前强调色变化。 */
+  --palette-blue: #5579d5;
+  --palette-violet: #8066c7;
+  --palette-coral: #d97664;
+  --palette-teal: #3a9b9a;
+  --palette-amber: #d89338;
+
+  /* 外壳尺寸 */
+  --sidebar-width: 232px;
+  --topbar-height: 56px;
+
+  /* 密度变量 */
+  --density-row: 36px;
+  --density-gap: 8px;
+  --density-card-pad: 32px;
+  --density-page-pad: 28px;
+  --density-nav-gap: 2px;
+
+  /* 动效 */
+  --motion-fast: 120ms;
+  --motion-base: 180ms;
+}
+
+/* 强调色只替换 --blue / --blue-soft / --blue-ink。 */
+:root[data-accent='violet'] {
+  --accent: var(--violet);
+  --accent-soft: var(--violet-soft);
+  --accent-ink: #6a50b3;
+}
+
+:root[data-accent='coral'] {
+  --accent: var(--coral);
+  --accent-soft: var(--coral-soft);
+  --accent-ink: #ab5346;
+}
+
+:root[data-accent='teal'] {
+  --accent: var(--teal);
+  --accent-soft: var(--teal-soft);
+  --accent-ink: #2b7776;
+}
+
+:root[data-accent='amber'] {
+  --accent: var(--amber);
+  --accent-soft: var(--amber-soft);
+  --accent-ink: #9c6624;
+  --on-accent: #2f2415;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg: #171b24;
+  --surface: #202633;
+  --surface-2: #252c3a;
+  --surface-3: #1b2029;
+  --ink: #e7eaf1;
+  --muted: #9ca7ba;
+  --line: #323948;
+  --line-strong: #414a5c;
+
+  --accent-soft: #26324a;
+  --accent-ink: #a9bdf0;
+  --on-accent: #ffffff;
+
+  --violet-soft: #2f2a44;
+  --coral-soft: #3a2a2a;
+  --teal-soft: #22383a;
+  --amber-soft: #3a3022;
+  --green-soft: #22352d;
+  --red-soft: #3b2a2a;
+
+  --focus-ring: #8aa6ea;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --danger-hover: #e07b76;
+  --scrim: rgba(0, 0, 0, 0.55);
+  --scrim-strong: rgba(0, 0, 0, 0.72);
+}
+
+/* 深色主题下强调色仍只改变 --blue 系，并保持可读的 ink/soft。 */
+:root[data-theme='dark'][data-accent='violet'] {
+  --accent-soft: var(--violet-soft);
+  --accent-ink: #c0aef0;
+}
+
+:root[data-theme='dark'][data-accent='coral'] {
+  --accent-soft: var(--coral-soft);
+  --accent-ink: #e9a99e;
+}
+
+:root[data-theme='dark'][data-accent='teal'] {
+  --accent-soft: var(--teal-soft);
+  --accent-ink: #8fd0cd;
+}
+
+:root[data-theme='dark'][data-accent='amber'] {
+  --accent-soft: var(--amber-soft);
+  --accent-ink: #e8bd7d;
+  --on-accent: #2f2415;
+}
+
+:root[data-density='compact'] {
+  --density-row: 30px;
+  --density-gap: 5px;
+  --density-card-pad: 20px;
+  --density-page-pad: 20px;
+  --density-nav-gap: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0ms;
+    --motion-base: 0ms;
+  }
+}

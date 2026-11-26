@@ -1,0 +1,7 @@
+/target/
+/gen/schemas/
+
+# 授权公钥清单必须入库；私钥（*.pem）不入库。
+!keys/
+!keys/product_keys.json
+*.pem

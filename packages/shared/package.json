@@ -1,0 +1,16 @@
+{
+  "name": "@zhixing/shared",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "知行同步协议共享类型、HLC/VV/字段 LWW 合并逻辑",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
+}

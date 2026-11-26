@@ -1,0 +1,441 @@
+/* 统一日期字段：单行 input + 日历图标 + .dp-popover。只使用全局 design token。 */
+
+.date-field-group {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.date-field {
+  box-sizing: border-box;
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  height: var(--control-h);
+  align-items: stretch;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-button);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.date-field:hover {
+  border-color: var(--line-strong);
+}
+
+.date-field:focus-within {
+  border-color: var(--focus-ring);
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.date-field.is-open {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 2px var(--blue-soft);
+}
+
+.date-field.is-invalid {
+  border-color: var(--red);
+}
+
+.date-field-group[data-disabled] .date-field {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.date-field-group[data-readonly] .date-field,
+.date-field-group[data-readonly] .date-field-input {
+  cursor: default;
+}
+
+/*
+ * 消费方的 `.quickadd-field input` / `.calendar-tool-grid input` /
+ * `.task-batch-date input` 也会命中这里；用更高特异性收回，保证外框只有一层。
+ */
+.date-field .date-field-input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+  flex: 1;
+  padding: 0 var(--space-1) 0 var(--space-2);
+  border: 0;
+  border-radius: 0;
+  outline: none;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--text-control);
+  line-height: 1.45;
+  text-overflow: ellipsis;
+}
+
+.date-field .date-field-input::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
+/*
+ * 消费方的 `.task-field input:focus-visible` / `.quickadd-field input:focus` /
+ * `.calendar-tool-grid input` 与本文件同特异性，靠加载顺序不可靠。
+ * 这里统一提高一级：边框、焦点圈、行内错误只由外层 .date-field 承担。
+ */
+.date-field-group .date-field .date-field-input:focus,
+.date-field-group .date-field .date-field-input:focus-visible {
+  border: 0;
+  outline: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.date-field-group .date-field .date-field-input:disabled {
+  cursor: not-allowed;
+  opacity: 1;
+  background: transparent;
+}
+
+.date-field-icon {
+  display: inline-grid;
+  width: 30px;
+  flex: 0 0 30px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.date-field-icon:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.date-field-icon:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: -2px;
+}
+
+.date-field.is-open .date-field-icon {
+  color: var(--blue);
+}
+
+.date-field-icon:disabled {
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.date-field-help {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-10-5);
+  line-height: 1.4;
+  /* 双列表单里辅助行较窄，避免农历最后只剩一个孤字。 */
+  text-wrap: pretty;
+}
+
+.date-field-error {
+  margin: 0;
+  color: var(--red);
+  font-size: var(--text-10-5);
+  line-height: 1.4;
+  text-wrap: pretty;
+}
+
+/* ---------- 弹层 ---------- */
+.dp-popover {
+  box-sizing: border-box;
+  position: fixed;
+  /* 普通页面 200；进入共享模态时由 data-layer 提升到遮罩之上（1250）。 */
+  z-index: var(--z-popover, 200);
+  width: 320px;
+  max-width: calc(100vw - 16px);
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  color: var(--ink);
+  /* 高度受限时只滚动弹层内部，滚动链不穿透到页面。 */
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* portal 到 body 后与模态没有父子关系：按锚点所在层显式提级。 */
+.dp-popover[data-layer='modal'] {
+  z-index: var(--z-modal-popover, 1250);
+}
+
+/* 首帧测量前隐藏，避免在左上角闪一下；测量后移除。 */
+.dp-popover[data-ready='false'] {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.dp-header {
+  display: flex;
+  height: 36px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.dp-title {
+  flex: 1;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: 0.01em;
+}
+
+.dp-nav {
+  display: inline-grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 17px;
+  line-height: 1;
+}
+
+.dp-nav:hover {
+  border-color: var(--line);
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.dp-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2px;
+  height: 22px;
+  align-items: center;
+  color: var(--muted);
+  font-size: 9.5px;
+  text-align: center;
+}
+
+.dp-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2px;
+}
+
+.dp-day {
+  box-sizing: border-box;
+  display: flex;
+  min-width: 0;
+  min-height: 44px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: 2px 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  font: inherit;
+}
+
+.dp-day:hover {
+  background: var(--surface-3);
+}
+
+.dp-day:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.dp-day.is-outside {
+  opacity: 0.4;
+}
+
+.dp-day.is-rest:not(.is-selected) .dp-day-num {
+  color: var(--muted);
+}
+
+.dp-day.is-today {
+  box-shadow: inset 0 0 0 1px var(--blue);
+}
+
+.dp-day.is-selected {
+  background: var(--blue);
+  color: var(--on-accent);
+}
+
+.dp-day.is-selected:hover {
+  background: var(--blue);
+}
+
+.dp-day.is-selected.is-today {
+  box-shadow: inset 0 0 0 1px var(--on-accent);
+}
+
+.dp-day-num {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.dp-day-lunar {
+  overflow: hidden;
+  max-width: 100%;
+  color: var(--muted);
+  font-size: 8.5px;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dp-day.is-selected .dp-day-lunar {
+  color: var(--on-accent);
+  opacity: 0.82;
+}
+
+.dp-footer {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.dp-preview {
+  display: flex;
+  min-height: 34px;
+  flex-direction: column;
+  gap: 1px;
+  padding: 1px 2px 3px;
+}
+
+.dp-preview strong {
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.dp-preview-lunar {
+  color: var(--muted);
+  font-size: 9.5px;
+  line-height: 1.35;
+}
+
+/* 已预览、未写库：与农历回显同一行，提示「确定」前不提交。 */
+.dp-preview-pending {
+  display: inline-block;
+  margin-left: var(--space-1);
+  padding: 0 5px;
+  border-radius: var(--radius-sm);
+  background: var(--blue-soft);
+  color: var(--blue);
+  font-size: 9.5px;
+  font-weight: 600;
+}
+
+.dp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+}
+
+.dp-spacer {
+  flex: 1;
+}
+
+.dp-chip,
+.dp-clear,
+.dp-confirm {
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font: inherit;
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.dp-chip {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.dp-chip:hover {
+  background: var(--surface-3);
+}
+
+/* 今天/明天越过 min/max：禁用并保留 title 说明原因。 */
+.dp-chip:disabled,
+.dp-chip:disabled:hover {
+  background: var(--surface-2);
+  color: var(--muted);
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.dp-clear {
+  border-color: transparent;
+  background: transparent;
+  color: var(--red);
+}
+
+.dp-clear:hover {
+  background: var(--red-soft);
+}
+
+.dp-confirm {
+  border-color: var(--blue);
+  background: var(--blue);
+  color: var(--on-accent);
+}
+
+.dp-confirm:hover {
+  filter: brightness(0.97);
+}
+
+.dp-chip:focus-visible,
+.dp-clear:focus-visible,
+.dp-confirm:focus-visible,
+.dp-nav:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* ≤480px / 矮视口 / 两侧空间不足：底部弹层；仍保留 6×7 网格。 */
+.dp-popover.is-sheet {
+  right: 12px;
+  bottom: 12px;
+  left: 12px;
+  width: auto;
+  max-width: none;
+  max-height: calc(100vh - 24px);
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+}
+
+.dp-popover.is-sheet .dp-day {
+  min-height: 40px;
+}
+
+/* 放在 grid/label/flex 行中时占满整行；批量改期与「应用」并排时占剩余宽度。 */
+.calendar-tool-grid .date-field-group,
+.quickadd-field .date-field-group,
+.task-field .date-field-group {
+  width: 100%;
+}
+
+.task-batch-date .date-field-group {
+  min-width: 0;
+  flex: 1;
+}

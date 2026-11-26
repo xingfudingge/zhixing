@@ -1,0 +1,16 @@
+{
+  "name": "@zhixing/sync-webdav",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "知行 WebDAV 同步核心：PROPFIND/GET/PUT/MKCOL/DELETE、目录清单推导状态、分片与重试",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
+}

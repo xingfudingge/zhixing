@@ -1,0 +1,1812 @@
+/* 日历工作台：月/周/日、事件、倒数日、小工具与沉浸时钟。只使用全局 design token。 */
+
+.calendar-page {
+  display: flex;
+  width: 100%;
+  max-width: 1460px;
+  min-width: 0;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0 auto;
+}
+
+.calendar-page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.calendar-eyebrow {
+  margin: 0 0 6px;
+  color: var(--blue-ink);
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.calendar-page-head h1 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+
+.calendar-page-sub {
+  max-width: 720px;
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+.calendar-page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+/* ---------- 分区标签 ---------- */
+.calendar-tabs {
+  display: inline-flex;
+  align-self: flex-start;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-2);
+}
+
+.calendar-tab {
+  padding: 6px 14px;
+  border-radius: 7px;
+  color: var(--muted);
+  font-size: 11.5px;
+  font-weight: 550;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.calendar-tab:hover {
+  color: var(--ink);
+}
+
+.calendar-tab--active {
+  background: var(--surface);
+  color: var(--blue-ink);
+  font-weight: 650;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ---------- 工具栏 ---------- */
+.calendar-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.calendar-nav {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.calendar-title {
+  margin: 0 0 0 6px;
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.calendar-view-switch {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface-2);
+}
+
+.calendar-view {
+  min-width: 32px;
+  padding: 4px 9px;
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.calendar-view--active {
+  background: var(--surface);
+  color: var(--blue-ink);
+  box-shadow: var(--shadow-sm);
+}
+
+.calendar-lunar-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 10.5px;
+  white-space: nowrap;
+}
+
+.calendar-lunar-toggle input {
+  accent-color: var(--blue);
+}
+
+.calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.calendar-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.calendar-legend i {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 3px;
+}
+
+.calendar-legend-task {
+  background: var(--teal);
+}
+.calendar-legend-event {
+  background: var(--violet);
+}
+.calendar-legend-countdown {
+  background: var(--amber);
+}
+.calendar-legend-ics {
+  border: 1px dashed var(--violet);
+  background: transparent;
+}
+.calendar-legend-holiday {
+  margin-left: auto;
+  color: var(--muted);
+}
+
+/* ---------- 主布局 ---------- */
+.calendar-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 296px;
+  gap: 12px;
+  align-items: start;
+  min-width: 0;
+}
+
+.calendar-main {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+/* ---------- 月视图 ---------- */
+.calendar-month {
+  min-width: 0;
+}
+
+.calendar-weekday-row {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-2);
+}
+
+.calendar-weekday {
+  padding: 8px 10px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.03em;
+  text-align: center;
+}
+
+.calendar-month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-auto-rows: minmax(104px, 1fr);
+}
+
+.calendar-cell {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+  padding: 6px 7px 7px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  cursor: pointer;
+  transition:
+    background var(--motion-fast) ease,
+    box-shadow var(--motion-fast) ease;
+}
+
+.calendar-cell:nth-child(7n) {
+  border-right: 0;
+}
+
+.calendar-cell:nth-last-child(-n + 7) {
+  border-bottom: 0;
+}
+
+.calendar-cell:hover {
+  background: var(--surface-2);
+}
+
+.calendar-cell--outside {
+  background: color-mix(in srgb, var(--surface-2) 70%, transparent);
+}
+
+.calendar-cell--outside .calendar-day-number,
+.calendar-cell--outside .calendar-lunar,
+.calendar-cell--outside .calendar-cell-items {
+  opacity: 0.48;
+}
+
+.calendar-cell--selected {
+  z-index: 1;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 2px var(--blue);
+}
+
+.calendar-cell--today .calendar-day-number {
+  color: var(--on-accent);
+  background: var(--blue);
+}
+
+.calendar-cell--holiday {
+  background:
+    linear-gradient(150deg, var(--coral-soft), transparent 72%),
+    var(--surface);
+}
+
+.calendar-cell--makeup {
+  background:
+    linear-gradient(150deg, var(--blue-soft), transparent 72%),
+    var(--surface);
+}
+
+/* 个人日期例外：调休/请假/临时上班；优先于法定节假日与周规则。 */
+.calendar-cell--exception-work,
+.calendar-cell--exception-rest {
+  background:
+    linear-gradient(150deg, var(--amber-soft), transparent 72%),
+    var(--surface);
+}
+
+.calendar-cell--exception-work .calendar-day-number,
+.calendar-cell--exception-rest .calendar-day-number {
+  color: var(--amber);
+  font-weight: 700;
+}
+
+/* 周规则判定为休息日；法定节假日/调休/个人例外仍用上面的独立底色。 */
+.calendar-cell--rest:not(.calendar-cell--holiday):not(
+    .calendar-cell--makeup
+  ):not(.calendar-cell--exception-work):not(.calendar-cell--exception-rest) {
+  background: color-mix(in srgb, var(--surface-2) 78%, var(--surface));
+}
+
+.calendar-cell--rest:not(.calendar-cell--holiday):not(
+    .calendar-cell--exception-work
+  ):not(.calendar-cell--exception-rest) .calendar-day-number {
+  color: var(--muted);
+}
+
+.calendar-cell[data-drop-active='true'] {
+  background: var(--blue-soft);
+  box-shadow: inset 0 0 0 2px var(--blue);
+}
+
+.calendar-cell-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.calendar-day-number {
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  color: var(--ink);
+  font-size: 11.5px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.calendar-today-mark {
+  color: var(--blue-ink);
+  font-size: 8.5px;
+  font-weight: 700;
+}
+
+.calendar-selected-mark {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--blue);
+}
+
+.calendar-week-number {
+  color: var(--muted);
+  font-size: 8px;
+  white-space: nowrap;
+}
+
+.calendar-holiday {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  margin-left: auto;
+  padding: 0 4px;
+  border-radius: 4px;
+  font-size: 8.5px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.calendar-holiday--holiday {
+  background: var(--coral-soft);
+  color: var(--coral);
+}
+
+.calendar-holiday--makeup {
+  background: var(--blue-soft);
+  color: var(--blue-ink);
+}
+
+.calendar-holiday--exception-work,
+.calendar-holiday--exception-rest {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+.calendar-lunar {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar-lunar--term {
+  color: var(--teal);
+  font-weight: 600;
+}
+
+.calendar-holiday-name {
+  color: var(--coral);
+}
+
+.calendar-cell-items {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 1px;
+}
+
+.calendar-chip {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 3px 5px;
+  border-radius: 5px;
+  font-size: 9.5px;
+  line-height: 1.35;
+  text-align: left;
+  transition: filter var(--motion-fast) ease;
+}
+
+.calendar-chip:hover {
+  filter: brightness(0.97);
+}
+
+.calendar-chip--compact {
+  padding: 2px 4px;
+  font-size: 9px;
+}
+
+.calendar-chip--task {
+  background: var(--teal-soft);
+  color: var(--teal);
+}
+
+.calendar-chip--event {
+  background: var(--violet-soft);
+  color: var(--violet);
+}
+
+.calendar-chip--readonly {
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--violet) 38%, transparent);
+}
+
+.calendar-chip--readonly::after {
+  content: '只读';
+  flex: none;
+  margin-left: auto;
+  padding: 0 3px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--violet) 13%, transparent);
+  font-size: 7.5px;
+  line-height: 1.35;
+  opacity: 0.9;
+}
+
+.calendar-chip--countdown {
+  background: var(--amber-soft);
+  color: #9a6a24;
+}
+
+:root[data-theme='dark'] .calendar-chip--countdown {
+  color: var(--amber);
+}
+
+/* 抓手只出现在真正可拖的任务芯片上（已完成/事件/倒数日不可拖）。 */
+.calendar-chip[data-draggable='true'] {
+  cursor: grab;
+  /* 触控：纵向滑动仍滚页面，横向移动进入 Pointer 拖拽。 */
+  touch-action: pan-y;
+}
+
+.calendar-chip[data-draggable='true']:active {
+  cursor: grabbing;
+}
+
+.calendar-chip.is-drag-source {
+  opacity: 0.45;
+}
+
+body.is-calendar-dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+
+[data-drag-ghost] {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 240px;
+  padding: 3px 6px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-6, 6px);
+  background: var(--surface);
+  box-shadow: var(--shadow-menu, var(--shadow));
+  color: var(--ink);
+  font-size: 9.5px;
+  line-height: 1.35;
+  pointer-events: none;
+  opacity: 0.96;
+}
+
+.calendar-drag-ghost-time {
+  flex: none;
+  color: var(--muted);
+  font-size: 8.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.calendar-drag-ghost-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar-chip-time {
+  flex: none;
+  font-size: 8.5px;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.82;
+}
+
+.calendar-chip-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar-chip-mark {
+  flex: none;
+  font-size: 8px;
+}
+
+.calendar-more {
+  padding-left: 3px;
+  color: var(--muted);
+  font-size: 8.5px;
+}
+
+/* ---------- 周视图 ---------- */
+.calendar-week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  min-width: 0;
+  min-height: 430px;
+}
+
+.calendar-week-column {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  border-right: 1px solid var(--line);
+  cursor: pointer;
+  transition: background var(--motion-fast) ease;
+}
+
+.calendar-week-column:last-child {
+  border-right: 0;
+}
+
+.calendar-week-column:hover {
+  background: var(--surface-2);
+}
+
+.calendar-week-column--selected {
+  background: var(--surface);
+  box-shadow: inset 0 0 0 2px var(--blue);
+}
+
+.calendar-week-column--today {
+  background: linear-gradient(180deg, var(--blue-soft), transparent 32%);
+}
+
+.calendar-week-column--holiday {
+  background: linear-gradient(180deg, var(--coral-soft), transparent 30%);
+}
+
+.calendar-week-column--makeup {
+  background: linear-gradient(180deg, var(--blue-soft), transparent 30%);
+}
+
+.calendar-week-column--exception-work,
+.calendar-week-column--exception-rest {
+  background: linear-gradient(180deg, var(--amber-soft), transparent 30%);
+}
+
+.calendar-week-column--rest:not(.calendar-week-column--holiday):not(
+    .calendar-week-column--makeup
+  ):not(.calendar-week-column--exception-work):not(
+    .calendar-week-column--exception-rest
+  ) {
+  background: color-mix(in srgb, var(--surface-2) 78%, var(--surface));
+}
+
+.calendar-week-column[data-drop-active='true'] {
+  background: var(--blue-soft);
+  box-shadow: inset 0 0 0 2px var(--blue);
+}
+
+.calendar-week-head {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 64px;
+  padding: 9px 8px;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+
+.calendar-week-weekday {
+  width: 100%;
+  color: var(--muted);
+  font-size: 9.5px;
+  font-weight: 600;
+}
+
+.calendar-week-day {
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.calendar-week-head .calendar-holiday {
+  margin-left: 0;
+}
+
+.calendar-week-items {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+  padding: 7px;
+}
+
+.calendar-week-empty {
+  padding: 10px 2px;
+  color: var(--muted);
+  font-size: 9px;
+  text-align: center;
+}
+
+/* ---------- 日视图 ---------- */
+.calendar-day {
+  min-width: 0;
+  padding: 14px 16px 16px;
+}
+
+.calendar-day-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.calendar-day-head h3 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.calendar-day-head p {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 10.5px;
+}
+
+.calendar-day-range {
+  padding: 3px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 9.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.calendar-allday {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.calendar-allday-label {
+  width: 46px;
+  flex: none;
+  color: var(--muted);
+  font-size: 9.5px;
+  font-weight: 650;
+  line-height: 24px;
+}
+
+.calendar-allday-items {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.calendar-allday-items .calendar-chip {
+  width: auto;
+  max-width: 240px;
+}
+
+.calendar-day-empty {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 24px;
+}
+
+.calendar-timeline {
+  margin-top: 4px;
+}
+
+.calendar-hour-row {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr);
+  align-items: stretch;
+}
+
+.calendar-hour-label {
+  padding-top: 2px;
+  color: var(--muted);
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+}
+
+.calendar-hour-slot {
+  position: relative;
+  border-top: 1px solid var(--line);
+}
+
+.calendar-hour-row:first-child .calendar-hour-slot {
+  border-top-color: var(--line-strong);
+}
+
+.calendar-timeline-item {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  padding: 4px 7px;
+  border-radius: 6px;
+  font-size: 10px;
+  line-height: 1.3;
+  text-align: left;
+  z-index: 1;
+}
+
+.calendar-timeline-item span {
+  flex: none;
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.82;
+}
+
+.calendar-timeline-item b {
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar-timeline-item--task {
+  background: var(--teal-soft);
+  color: var(--teal);
+}
+
+.calendar-timeline-item--event {
+  background: var(--violet-soft);
+  color: var(--violet);
+}
+
+.calendar-outside {
+  margin-top: 14px;
+  padding: 11px 12px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 9px;
+  background: var(--surface-2);
+}
+
+.calendar-outside h4 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 10.5px;
+  font-weight: 650;
+}
+
+.calendar-outside p {
+  margin: 3px 0 7px;
+  color: var(--muted);
+  font-size: 9.5px;
+  line-height: 1.5;
+}
+
+.calendar-outside-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.calendar-outside-item {
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 9.5px;
+}
+
+.calendar-outside-item--task {
+  color: var(--teal);
+}
+
+.calendar-outside-item--event {
+  color: var(--violet);
+}
+
+/* ---------- 日期面板 ---------- */
+.calendar-date-panel {
+  position: sticky;
+  top: 0;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.calendar-date-panel-head h3 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.calendar-date-panel-head p {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.calendar-date-panel-holiday--holiday {
+  color: var(--coral);
+}
+
+.calendar-date-panel-holiday--makeup {
+  color: var(--blue-ink);
+}
+
+.calendar-date-panel-exception {
+  color: var(--amber);
+  font-weight: 600;
+}
+
+.calendar-panel-group {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.calendar-panel-group-head {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  margin-bottom: 2px;
+  color: var(--ink);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.calendar-panel-group-head small {
+  color: var(--muted);
+  font-size: 8.5px;
+  font-weight: 400;
+}
+
+.calendar-panel-row {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 5px 5px;
+  border-radius: 6px;
+  text-align: left;
+}
+
+.calendar-panel-row:hover {
+  background: var(--surface-2);
+}
+
+.calendar-panel-key {
+  width: 4px;
+  height: 14px;
+  flex: none;
+  border-radius: 3px;
+  background: var(--teal);
+}
+
+.calendar-panel-row--event .calendar-panel-key {
+  background: var(--violet);
+}
+
+.calendar-panel-row--countdown .calendar-panel-key {
+  background: var(--amber);
+}
+
+.calendar-panel-row--past .calendar-panel-key {
+  background: var(--line-strong);
+}
+
+.calendar-panel-time {
+  width: 46px;
+  flex: none;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 8.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar-panel-row b {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 10.5px;
+  font-weight: 550;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar-panel-row--done b {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.calendar-panel-status {
+  margin-left: auto;
+  color: var(--green);
+  font-size: 8px;
+  white-space: nowrap;
+}
+
+.calendar-panel-readonly {
+  flex: none;
+  margin-left: auto;
+  padding: 0 3px;
+  border: 1px dashed color-mix(in srgb, var(--violet) 40%, var(--line));
+  border-radius: 3px;
+  color: var(--violet);
+  font-size: 7.5px;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.calendar-panel-empty {
+  margin: 2px 0 3px;
+  color: var(--muted);
+  font-size: 9.5px;
+}
+
+.calendar-panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding-top: 9px;
+  border-top: 1px solid var(--line);
+}
+
+/* ---------- 事件分区 ---------- */
+.events-section,
+.countdowns-section,
+.calendar-tools {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.calendar-info-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background:
+    linear-gradient(120deg, var(--blue-soft), transparent 60%),
+    var(--surface);
+}
+
+.calendar-info-icon {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  flex: none;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--blue-ink);
+  font-size: 13px;
+}
+
+.calendar-info-banner b {
+  display: block;
+  color: var(--ink);
+  font-size: 11.5px;
+  font-weight: 650;
+  margin-bottom: 2px;
+}
+
+.calendar-info-banner p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 10.5px;
+  line-height: 1.6;
+}
+
+.calendar-info-banner p b {
+  display: inline;
+  color: var(--ink);
+  font-weight: 650;
+}
+
+.event-day {
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.event-day-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.event-day-head h3 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.event-day-head p {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.event-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  padding: 9px 0;
+  border-top: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+
+.event-row--muted {
+  opacity: 0.9;
+}
+
+.event-row--readonly {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--violet) 5%, transparent),
+    transparent 62%
+  );
+}
+
+.event-readonly-badge {
+  flex: none;
+  padding: 2px 7px;
+  border: 1px dashed color-mix(in srgb, var(--violet) 45%, var(--line));
+  border-radius: 999px;
+  color: var(--violet);
+  font-size: 9.5px;
+  white-space: nowrap;
+}
+
+.event-dot {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--violet);
+}
+
+.event-dot--muted {
+  background: color-mix(in srgb, var(--violet) 45%, transparent);
+}
+
+.event-main {
+  min-width: 140px;
+  flex: 1;
+}
+
+.event-main b {
+  display: block;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 550;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.event-main small {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 9.5px;
+}
+
+.event-time {
+  flex: none;
+  padding: 2px 6px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 9.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.event-empty {
+  padding: 22px 10px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.7;
+  text-align: center;
+}
+
+/* ---------- 倒数日分区 ---------- */
+.countdown-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.countdown-category {
+  padding: 5px 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 10.5px;
+}
+
+.countdown-category--active {
+  border-color: var(--amber);
+  background: var(--amber-soft);
+  color: #9a6a24;
+  font-weight: 650;
+}
+
+:root[data-theme='dark'] .countdown-category--active {
+  color: var(--amber);
+}
+
+.countdown-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.countdown-head p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 10.5px;
+}
+
+.countdown-list {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.countdown-row {
+  display: grid;
+  grid-template-columns: 4px minmax(0, 1fr) 128px auto;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.countdown-mark {
+  width: 4px;
+  height: 38px;
+  border-radius: 4px;
+  background: var(--amber);
+}
+
+.countdown-row--past .countdown-mark {
+  background: var(--line-strong);
+}
+
+.countdown-row--soon .countdown-mark {
+  background: var(--coral);
+}
+
+.countdown-main {
+  min-width: 0;
+}
+
+.countdown-main b {
+  display: block;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 12.5px;
+  font-weight: 550;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.countdown-main small {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 9.5px;
+  line-height: 1.45;
+}
+
+.countdown-note {
+  color: var(--muted);
+}
+
+.countdown-days {
+  color: #9a6a24;
+  font-size: 17px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.countdown-days small {
+  margin-left: 2px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 400;
+}
+
+.countdown-days--past {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 550;
+}
+
+.countdown-days--soon {
+  color: var(--coral);
+}
+
+.countdown-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.countdown-empty {
+  padding: 36px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 12px;
+  color: var(--muted);
+  font-size: 11px;
+  text-align: center;
+}
+
+/* ---------- 小工具 ---------- */
+.calendar-tools-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.calendar-tool-tab {
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.calendar-tool-tab--active {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+  color: var(--blue-ink);
+  font-weight: 650;
+}
+
+.calendar-tool-card {
+  width: min(760px, 100%);
+  padding: 20px 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.calendar-tool-card h3 {
+  margin: 0 0 4px;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.calendar-tool-card > p {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 10.5px;
+  line-height: 1.6;
+}
+
+.calendar-tool-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.calendar-tool-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 9.5px;
+}
+
+/* 工具卡片与任务/快速添加共用控件基线；日期字段同高同圆角。 */
+.calendar-tool-grid input,
+.calendar-tool-grid select {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: var(--control-h);
+  padding: 0 var(--space-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-button);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--text-control);
+  line-height: 1.45;
+}
+
+.calendar-tool-grid input:focus-visible,
+.calendar-tool-grid select:focus-visible {
+  border-color: var(--focus-ring);
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.calendar-tool-result {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  padding: 13px 15px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-2);
+}
+
+.calendar-tool-result small {
+  display: block;
+  color: var(--muted);
+  font-size: 9.5px;
+}
+
+.calendar-tool-result strong {
+  display: block;
+  color: var(--blue-ink);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.calendar-tool-result--lunar strong {
+  font-size: 16px;
+  letter-spacing: -0.01em;
+}
+
+.calendar-tool-result > span {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.calendar-tool-result .task-button {
+  margin-left: auto;
+}
+
+.calendar-tool-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.calendar-tool-chips button {
+  padding: 3px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.calendar-tool-chips button:hover {
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+
+.calendar-zodiac {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.calendar-zodiac-animal {
+  display: grid;
+  width: 64px;
+  height: 64px;
+  flex: none;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--amber-soft);
+  color: #9a6a24;
+  font-size: 30px;
+}
+
+.calendar-zodiac strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.calendar-zodiac small {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.7;
+}
+
+.calendar-clock-card {
+  width: min(760px, 100%);
+  padding: 36px 22px;
+  border-radius: 16px;
+  background: linear-gradient(140deg, #222b3e, #303a54);
+  color: #eef3ff;
+  text-align: center;
+  box-shadow: 0 16px 40px rgba(24, 33, 52, 0.28);
+}
+
+.calendar-clock-preview {
+  font-size: 72px;
+  font-weight: 650;
+  letter-spacing: -0.05em;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+
+.calendar-clock-card p {
+  margin: 8px 0 18px;
+  color: #9daecb;
+  font-size: 10.5px;
+}
+
+.calendar-clock-card .task-button--primary {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.24);
+  color: #eef3ff;
+}
+
+/* ---------- 沉浸时钟 ---------- */
+.clock-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  padding: 26px 32px 24px;
+  background: #111827;
+  color: #eef3ff;
+  overflow: auto;
+}
+
+.clock-overlay--midnight {
+  background:
+    radial-gradient(circle at 22% 16%, rgba(76, 98, 148, 0.36), transparent 42%),
+    #111827;
+}
+
+.clock-overlay--dawn {
+  background:
+    radial-gradient(circle at 70% 18%, rgba(255, 255, 255, 0.8), transparent 46%),
+    linear-gradient(145deg, #dfe8f5, #f4eee5);
+  color: #263246;
+}
+
+.clock-overlay--paper {
+  background:
+    radial-gradient(circle at 24% 18%, rgba(255, 255, 255, 0.42), transparent 44%),
+    linear-gradient(145deg, #3b3025, #6b5540);
+  color: #fff4e2;
+}
+
+.clock-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.clock-brand {
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.12em;
+  opacity: 0.72;
+}
+
+.clock-exit {
+  padding: 6px 11px;
+  border: 1px solid currentColor;
+  border-radius: 8px;
+  color: inherit;
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.clock-exit:hover {
+  opacity: 1;
+}
+
+.clock-center {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 0;
+  text-align: center;
+}
+
+.clock-digital {
+  font-size: clamp(64px, 13vw, 132px);
+  font-weight: 650;
+  letter-spacing: -0.06em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.clock-seconds {
+  font-size: 0.38em;
+  letter-spacing: -0.02em;
+  opacity: 0.72;
+}
+
+.clock-ampm {
+  margin-left: 0.12em;
+  font-size: 0.2em;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  opacity: 0.62;
+}
+
+.clock-date {
+  margin: 8px 0 0;
+  font-size: 12px;
+  opacity: 0.72;
+}
+
+.clock-lunar {
+  margin: 0;
+  font-size: 10.5px;
+  opacity: 0.55;
+}
+
+.clock-analog {
+  width: min(56vh, 420px);
+  height: min(56vh, 420px);
+  max-width: 80vw;
+  max-height: 80vw;
+}
+
+.clock-tick {
+  stroke: currentColor;
+  stroke-width: 0.7;
+  opacity: 0.34;
+}
+
+.clock-tick--strong {
+  stroke-width: 1.6;
+  opacity: 0.7;
+}
+
+.clock-hand {
+  stroke: currentColor;
+  stroke-linecap: round;
+}
+
+.clock-hand--hour {
+  stroke-width: 5;
+}
+
+.clock-hand--minute {
+  stroke-width: 3.2;
+}
+
+.clock-hand--second {
+  stroke: #e48770;
+  stroke-width: 1.3;
+}
+
+.clock-cap {
+  fill: currentColor;
+}
+
+.clock-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding-top: 16px;
+}
+
+.clock-control-label {
+  margin: 0 4px 0 10px;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  opacity: 0.46;
+}
+
+.clock-control {
+  padding: 5px 10px;
+  border: 1px solid currentColor;
+  border-radius: 7px;
+  color: inherit;
+  font-size: 10px;
+  opacity: 0.55;
+}
+
+.clock-control:hover,
+.clock-control.is-on {
+  opacity: 1;
+}
+
+.clock-control.is-on {
+  background: rgba(255, 255, 255, 0.13);
+}
+
+.clock-overlay--dawn .clock-control.is-on {
+  background: rgba(38, 50, 70, 0.1);
+}
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 1180px) {
+  .calendar-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .calendar-date-panel {
+    position: static;
+  }
+
+  .calendar-panel-group {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .calendar-month-grid {
+    grid-auto-rows: minmax(92px, 1fr);
+  }
+
+  .calendar-week {
+    overflow-x: auto;
+    grid-template-columns: repeat(7, minmax(118px, 1fr));
+  }
+
+  .calendar-toolbar {
+    align-items: flex-start;
+  }
+
+  .calendar-lunar-toggle {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .calendar-page-head h1 {
+    font-size: 25px;
+  }
+
+  .calendar-legend-holiday {
+    margin-left: 0;
+  }
+
+  .calendar-month-grid {
+    grid-auto-rows: minmax(82px, 1fr);
+  }
+
+  .calendar-week-number,
+  .calendar-holiday-name {
+    display: none;
+  }
+
+  .countdown-row {
+    grid-template-columns: 4px minmax(0, 1fr) auto;
+  }
+
+  .countdown-days {
+    grid-column: 2;
+    text-align: left;
+  }
+
+  .countdown-actions {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+  }
+
+  .calendar-tool-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .event-row {
+    align-items: flex-start;
+  }
+
+  .event-main {
+    min-width: 100%;
+    order: 1;
+  }
+
+  .event-dot {
+    order: 0;
+  }
+
+  .event-time {
+    order: 2;
+  }
+
+  .event-row .task-button {
+    order: 3;
+  }
+
+  .clock-overlay {
+    padding: 18px;
+  }
+}

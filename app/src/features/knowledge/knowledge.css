@@ -1,0 +1,2423 @@
+/*
+ * 知识工作区（P1-01）。
+ * 全部颜色来自 tokens.css：--surface / --surface-2 / --ink / --muted /
+ * --line / --blue。没有为知笔记式的深色目录树或第二套主色。
+ */
+
+/*
+ * 浮层层级 token（ZX8-RAILPOP-01）。
+ * 顺序不可变：右栏 < 点击浮层 < 菜单 < 上下文菜单 < Toast < 抽屉 <
+ * 沉浸阅读 < 模态。tokens.css 尚未提供 --z-* 时，这里给出知识页唯一的
+ * 真值；portal 到 body 的菜单/子菜单通过 `var(--z-*, fallback)` 读取。
+ */
+:root {
+  --z-rail: 10;
+  --z-tooltip: 330;
+  --z-rail-flyout: 340;
+  --z-menu: 420;
+  --z-context: 600;
+  --z-toast: 800;
+  --z-drawer-scrim: 900;
+  --z-drawer: 910;
+  --z-immersive: 1000;
+  --z-modal: 1200;
+  --z-modal-popover: 1250;
+}
+
+.knowledge-shell {
+  position: relative;
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.kn-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.kn-state-card {
+  margin: auto;
+  max-width: 560px;
+}
+
+.kn-workspace {
+  display: grid;
+  grid-template-columns: 208px 280px minmax(0, 1fr);
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  transition: grid-template-columns var(--motion-base) cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/*
+ * ESC 展开（ZX8-ESC-01）：轻量布局专注，只收左树/列表。
+ * 不加 scrim、不降 opacity/filter、不隐藏右栏、不改变正文颜色/字号。
+ * 收起列用 inert + aria-hidden 阻止焦点落入不可见区域。
+ */
+.kn-workspace.is-expanded {
+  grid-template-columns: 0 0 minmax(0, 1fr);
+}
+
+.kn-workspace.is-expanded .kn-tree,
+.kn-workspace.is-expanded .kn-list {
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
+  border-right: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: visibility 0s linear var(--motion-base);
+}
+
+@media (min-width: 981px) {
+  /* 只放宽画布，不放大字号；正文仍使用默认字号/行高。 */
+  .kn-workspace.is-expanded .kn-paper {
+    --kn-paper-inline: max(28px, calc((100% - 920px) / 2));
+  }
+}
+
+/* 专注模式：只留编辑器 + 工具轨（与原型 focus 行为一致）。 */
+.kn-workspace.is-focus {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.kn-workspace.is-focus .kn-tree,
+.kn-workspace.is-focus .kn-list,
+.kn-workspace.is-focus .kn-info {
+  display: none;
+}
+
+.kn-workspace.is-focus .kn-editor-content.has-panel {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* 全屏阅读：整页沉浸，退出按钮仍由右栏/ESC 提供。 */
+.knowledge-shell.is-immersive {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-immersive, 1000);
+  height: 100vh;
+  background: var(--surface);
+}
+
+.knowledge-shell.is-immersive .kn-workspace {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.knowledge-shell.is-immersive .kn-tree,
+.knowledge-shell.is-immersive .kn-list,
+.knowledge-shell.is-immersive .kn-rail,
+.knowledge-shell.is-immersive .kn-tabs,
+.knowledge-shell.is-immersive .kn-commandbar {
+  display: none;
+}
+
+/* 文档命令栏：只在知识页出现，5 个文档级命令 + 窄窗「面板」。 */
+.kn-commandbar {
+  display: flex;
+  min-width: 0;
+  min-height: 44px;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.kn-commandbar-main,
+.kn-commandbar-end {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 2px;
+}
+
+.kn-commandbar-main {
+  overflow: hidden;
+}
+
+.kn-commandbar-end {
+  flex: none;
+  margin-left: auto;
+  gap: 4px;
+}
+
+.kn-cmd-button {
+  display: inline-flex;
+  height: 30px;
+  min-width: 0;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0 8px;
+  border-radius: var(--radius-6);
+  color: var(--ink);
+  font-size: var(--text-12);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.kn-cmd-button:hover:not(:disabled) {
+  background: var(--surface-2);
+}
+
+.kn-cmd-button.is-active,
+.kn-cmd-button[aria-expanded='true'] {
+  background: var(--blue-soft);
+  color: var(--blue-ink);
+}
+
+.kn-cmd-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.kn-cmd-icon {
+  display: inline-flex;
+  width: 16px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-size: var(--text-12);
+}
+
+.kn-cmd-button.is-active .kn-cmd-icon,
+.kn-cmd-button[aria-expanded='true'] .kn-cmd-icon {
+  color: inherit;
+}
+
+.kn-cmd-text {
+  max-width: 92px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kn-cmd-caret {
+  color: var(--muted);
+  font-size: var(--text-9-5);
+}
+
+.kn-cmd-primary {
+  display: inline-flex;
+  height: 30px;
+  align-items: center;
+  padding: 0 11px;
+  border-radius: var(--radius-6);
+  background: var(--blue);
+  color: var(--on-accent);
+  font-size: var(--text-11-5);
+  white-space: nowrap;
+}
+
+.kn-cmd-primary:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+.kn-cmd-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.kn-help-list {
+  display: grid;
+  gap: 7px;
+  margin: 12px 0;
+}
+
+.kn-help-list > div {
+  display: grid;
+  grid-template-columns: 168px minmax(0, 1fr);
+  gap: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+}
+
+.kn-help-list dt {
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: var(--text-10-5);
+}
+
+.kn-help-list dd {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-11);
+}
+
+.knowledge-shell.is-immersive .kn-paper-head {
+  padding-top: 7vh;
+}
+
+.knowledge-shell.is-immersive .kn-editor {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.knowledge-shell.is-immersive .kn-editor-content {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.kn-immersive-exit {
+  position: fixed;
+  top: 14px;
+  right: 18px;
+  z-index: calc(var(--z-immersive, 1000) + 1);
+  padding: 6px 11px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-8);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: var(--text-10-5);
+  box-shadow: var(--shadow-sm);
+}
+
+.kn-immersive-exit:hover {
+  color: var(--blue-ink);
+  border-color: var(--line-strong);
+}
+
+/* ------------------------------------------------------------------ */
+/* 目录树                                                              */
+/* ------------------------------------------------------------------ */
+
+.kn-tree {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 9px;
+  overflow: auto;
+  border-right: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.kn-tree-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 8px 9px;
+  color: var(--ink);
+  font-size: var(--text-13);
+  font-weight: 700;
+}
+
+.kn-icon-button {
+  display: inline-grid;
+  width: var(--icon-button);
+  height: var(--icon-button);
+  place-items: center;
+  border-radius: var(--radius-button);
+  color: var(--muted);
+  font-size: var(--icon-sm);
+  line-height: 1;
+}
+
+.kn-icon-button:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.kn-tree-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  min-width: 0;
+  padding: 6px 8px;
+  border-radius: var(--radius-8);
+  color: var(--muted);
+  font-size: var(--text-12);
+  text-align: left;
+}
+
+.kn-tree-item:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.kn-tree-item.is-active {
+  background: var(--blue-soft);
+  color: var(--blue-ink);
+  font-weight: 650;
+}
+
+.kn-tree-icon {
+  width: 14px;
+  flex: none;
+  color: var(--muted);
+  font-size: var(--text-11);
+  text-align: center;
+}
+
+.kn-tree-item.is-active .kn-tree-icon {
+  color: var(--blue-ink);
+}
+
+.kn-tree-label {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kn-tree-count {
+  flex: none;
+  color: var(--muted);
+  font-size: var(--text-10-5);
+  font-variant-numeric: tabular-nums;
+}
+
+.kn-tree-group {
+  margin: 14px 9px 4px;
+  color: var(--muted);
+  font-size: var(--text-10-5);
+  font-weight: 650;
+  letter-spacing: 0.06em;
+}
+
+.kn-tree-hint {
+  padding: 2px 9px;
+  color: var(--muted);
+  font-size: var(--text-10-5);
+}
+
+.kn-tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 3px 8px;
+}
+
+.kn-tag {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: var(--text-10-5);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+/* ------------------------------------------------------------------ */
+/* 笔记列表                                                            */
+/* ------------------------------------------------------------------ */
+
+.kn-list {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  border-right: 1px solid var(--line);
+  background: var(--surface-2);
+}
+
+.kn-list-head {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 13px 13px 9px;
+  border-bottom: 1px solid var(--line);
+}
+
+.kn-list-head h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: var(--text-13);
+  font-weight: 700;
+}
+
+.kn-list-head > div > span {
+  color: var(--muted);
+  font-size: var(--text-10-5);
+}
+
+.kn-primary-button,
+.kn-secondary-button,
+.kn-danger-button {
+  display: inline-flex;
+  height: var(--control-h);
+  align-items: center;
+  justify-content: center;
+  gap: var(--icon-gap);
+  padding: 0 var(--control-pad-x);
+  border: 1px solid transparent;
+  border-radius: var(--radius-button);
+  font-size: var(--text-control);
+  font-weight: var(--weight-medium);
+  line-height: 1.2;
+}
+
+.kn-primary-button {
+  background: var(--blue);
+  color: var(--on-accent);
+  font-weight: var(--weight-semibold);
+}
+
+.kn-primary-button:hover {
+  filter: brightness(0.94);
+}
+
+.kn-secondary-button {
+  border-color: var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.kn-secondary-button:hover {
+  background: var(--surface-2);
+}
+
+.kn-danger-button {
+  border-color: color-mix(in srgb, var(--red) 35%, var(--line));
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.kn-danger-button:hover {
+  border-color: var(--red);
+}
+
+/*
+ * 危险确认：只有确认弹层里的危险按钮用红底白字；正文/面板里的删除入口
+ * 保持危险幽灵样式，避免一屏出现两个同等权重的红底按钮。
+ */
+.kn-modal-actions .kn-danger-button {
+  border-color: transparent;
+  background: var(--red);
+  color: var(--on-danger);
+  font-weight: var(--weight-semibold);
+}
+
+.kn-modal-actions .kn-danger-button:hover {
+  background: var(--danger-hover);
+}
+
+/* 一屏一个主行动：列表头已有「新建」主按钮时，恢复/面板行动降为次按钮。 */
+.kn-trash-banner .kn-primary-button,
+.kn-info .kn-primary-button {
+  border-color: var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: var(--weight-medium);
+}
+
+.kn-trash-banner .kn-primary-button:hover,
+.kn-info .kn-primary-button:hover {
+  background: var(--surface-2);
+  filter: none;
+}
+
+.kn-note-list {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  gap: 3px;
+  padding: 7px;
+  overflow: auto;
+}
+
+.kn-empty {
+  margin: 18px 8px;
+  color: var(--muted);
+  font-size: var(--text-11-5);
+  line-height: 1.6;
+}
+
+.kn-note-row {
+  position: relative;
+  min-height: 58px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-10);
+  background: transparent;
+}
+
+.kn-note-row:hover {
+  border-color: var(--line);
+  background: var(--surface);
+}
+
+.kn-note-row.is-active {
+  border-color: var(--line-strong);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.kn-note-open {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  min-height: 58px;
+  flex-direction: column;
+  gap: 4px;
+  padding: 9px 58px 8px 10px;
+  border-radius: var(--radius-8);
+  text-align: left;
+}
+
+.kn-note-title {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 3px;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: var(--text-11-5);
+  font-weight: 600;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kn-pin {
+  flex: none;
+  font-size: var(--text-9-5);
+}
+
+.kn-note-meta {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  color: var(--muted);
+  font-size: var(--text-9-5);
+  line-height: 1.4;
+}
+
+/* 孤儿画板行：打开仍是主操作，关联/删除是次级动作。 */
+.kn-orphan-row {
+  padding-bottom: 7px;
+}
+
+.kn-orphan-row .kn-note-open {
+  padding-right: 10px;
+  padding-bottom: 4px;
+}
+
+.kn-orphan-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 10px;
+}
+
+.kn-orphan-actions .kn-secondary-button,
+.kn-orphan-actions .kn-danger-button {
+  height: 24px;
+  padding: 0 7px;
+  font-size: var(--text-10-5);
+}
+
+.kn-note-badge {
+  padding: 0 4px;
+  border-radius: var(--radius-6);
+  background: var(--violet-soft);
+  color: var(--violet);
+  font-size: var(--text-9-5);
+}
+
+.kn-star,
+.kn-more {
+  position: absolute;
+  right: 7px;
+  display: inline-grid;
+  width: 22px;
+  height: 20px;
+  place-items: center;
+  border-radius: var(--radius-6);
+  color: var(--muted);
+  font-size: var(--text-11);
+  line-height: 1;
+}
+
+.kn-star {
+  top: 7px;
+  opacity: 0.55;
+}
+
+.kn-star.is-on {
+  opacity: 1;
+  color: var(--amber);
+}
+
+.kn-star:hover,
+.kn-more:hover {
+  background: var(--blue-soft);
+  color: var(--blue-ink);
+}
+
+.kn-more {
+  bottom: 6px;
+  opacity: 0.5;
+  letter-spacing: -1px;
+}
+
+.kn-note-row:hover .kn-star,
+.kn-note-row:hover .kn-more,
+.kn-note-row.is-active .kn-star,
+.kn-note-row.is-active .kn-more,
+.kn-star:focus-visible,
+.kn-more:focus-visible {
+  opacity: 1;
+}
+
+/* ------------------------------------------------------------------ */
+/* 编辑器                                                              */
+/* ------------------------------------------------------------------ */
+
+.kn-editor {
+  /* 右栏浮窗锚点：浮窗右缘 = 右栏左缘 - 1px；滚动/缩放均不参与计算。 */
+  --kn-rail-w: 48px;
+  --kn-tabs-h: 42px;
+  --kn-commandbar-h: 44px;
+  --kn-flyout-top: calc(var(--kn-tabs-h) + var(--kn-commandbar-h) + 6px);
+  --kn-flyout-w: clamp(264px, 24vw, 360px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--kn-rail-w);
+  min-width: 0;
+  min-height: 0;
+  background: var(--surface);
+}
+
+.kn-editor-main {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.kn-tabs {
+  display: flex;
+  height: 42px;
+  flex: none;
+  align-items: stretch;
+  gap: 3px;
+  padding: 5px 10px 0;
+  overflow: auto;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-2);
+}
+
+.kn-tab {
+  display: flex;
+  min-width: 0;
+  max-width: 220px;
+  align-items: center;
+  border-radius: var(--radius-8) var(--radius-8) 0 0;
+  color: var(--muted);
+}
+
+.kn-tab:hover {
+  background: var(--surface);
+}
+
+.kn-tab.is-active {
+  background: var(--surface);
+  color: var(--blue-ink);
+  box-shadow:
+    inset 0 -1px 0 var(--line-strong),
+    inset 1px 0 0 var(--line),
+    inset -1px 0 0 var(--line);
+}
+
+.kn-tab > button[role='tab'] {
+  min-width: 0;
+  padding: 0 4px 0 10px;
+  color: inherit;
+  font-size: var(--text-10-5);
+  line-height: 36px;
+}
+
+.kn-tab-title {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kn-tab.is-active > button[role='tab'] {
+  font-weight: 650;
+}
+
+.kn-tab-close {
+  display: inline-grid;
+  width: var(--icon-button-sm);
+  height: var(--icon-button-sm);
+  flex: none;
+  place-items: center;
+  border-radius: var(--radius-6);
+  color: var(--muted);
+  font-size: var(--text-13);
+  line-height: 1;
+}
+
+.kn-tab-close:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.kn-tab-add {
+  display: inline-grid;
+  width: 30px;
+  flex: none;
+  place-items: center;
+  border-radius: var(--radius-6);
+  color: var(--muted);
+  font-size: var(--text-16);
+}
+
+.kn-tab-add:hover {
+  background: var(--surface);
+  color: var(--blue-ink);
+}
+
+.kn-editor-content {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  flex: 1;
+  min-height: 0;
+}
+
+/*
+ * 右栏浮窗是 fixed 覆盖层（ZX8-RAILPOP-01），不占网格列、不推动正文。
+ * `has-panel` 仅保留为状态钩子；列宽始终单列。
+ */
+.kn-editor-content.has-panel,
+.kn-editor-content.has-panel.is-graph {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.kn-paper {
+  --kn-paper-inline: max(28px, calc((100% - 860px) / 2));
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+/* 展开后焦点落在纸面（不是 input），避免下一次 Esc 被输入守卫吞掉。 */
+.kn-paper:focus {
+  outline: none;
+}
+
+.kn-paper-head {
+  flex: none;
+  padding: 26px var(--kn-paper-inline) 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.kn-block-editor {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+}
+
+.kn-block-editor .zxe {
+  height: 100%;
+  min-height: 0;
+}
+
+/* 待办工作台在知识页里占满正文剩余高度：编辑器滚动，文末汇总固定在下方。 */
+.kn-block-editor .kn-note-todos {
+  height: auto;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+.kn-block-editor .kn-note-todos > .zxe {
+  height: auto;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+.kn-block-editor .zxe-body {
+  padding-top: 18px;
+}
+
+.kn-title {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: var(--text-display);
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.025em;
+  line-height: 1.3;
+}
+
+.kn-title:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.kn-title::placeholder {
+  color: var(--muted);
+}
+
+.kn-title[readonly] {
+  color: var(--muted);
+}
+
+.kn-paper-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: var(--text-10-5);
+  line-height: 1.5;
+}
+
+.kn-body {
+  min-height: 320px;
+  margin-top: 16px;
+  color: var(--ink);
+  font-size: var(--text-body-lg);
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+
+.kn-body:empty::before {
+  content: attr(data-placeholder);
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.kn-body h1,
+.kn-body h2,
+.kn-body h3,
+.kn-body h4,
+.kn-body h5 {
+  margin: 22px 0 8px;
+  color: var(--ink);
+  line-height: 1.4;
+}
+
+.kn-body h1 {
+  font-size: var(--text-24);
+}
+
+.kn-body h2 {
+  font-size: var(--text-20);
+}
+
+.kn-body h3 {
+  font-size: var(--text-16);
+}
+
+.kn-body h4,
+.kn-body h5 {
+  font-size: var(--text-14);
+}
+
+.kn-body p {
+  margin: 0 0 9px;
+}
+
+.kn-body ul,
+.kn-body ol {
+  margin: 8px 0;
+  padding-left: 22px;
+}
+
+.kn-body blockquote {
+  margin: 10px 0;
+  padding: 8px 12px;
+  border-left: 3px solid var(--violet);
+  border-radius: 0 var(--radius-8) var(--radius-8) 0;
+  background: var(--violet-soft);
+  color: var(--ink);
+}
+
+.kn-body code {
+  padding: 1px 4px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-6);
+  background: var(--surface-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-12);
+}
+
+.kn-body pre {
+  padding: 10px 12px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-8);
+  background: var(--surface-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-12);
+  line-height: 1.6;
+}
+
+.kn-body a {
+  color: var(--blue-ink);
+  text-decoration: none;
+  border-bottom: 1px dashed var(--focus-ring);
+}
+
+.kn-body table {
+  border-collapse: collapse;
+}
+
+.kn-body th,
+.kn-body td {
+  padding: 5px 8px;
+  border: 1px solid var(--line);
+  text-align: left;
+}
+
+.kn-body .callout,
+.kn-body .zx-task-backlink {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0 0 14px;
+  padding: 8px 10px;
+  border-left: 3px solid var(--blue);
+  border-radius: 0 var(--radius-8) var(--radius-8) 0;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: var(--text-11-5);
+}
+
+.kn-body .zx-task-backlink p {
+  margin: 0;
+}
+
+.kn-body .itodo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 2px 0;
+}
+
+.kn-body .itodo.done .ittext {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.knowledge-backlink {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  margin: 12px var(--kn-paper-inline) 0;
+  padding: 7px 9px;
+  border-radius: var(--radius-8);
+  background: var(--blue-soft);
+  color: var(--muted);
+  font-size: var(--text-10-5);
+}
+
+.knowledge-backlink span {
+  font-weight: 600;
+}
+
+.knowledge-backlink a {
+  color: var(--blue-ink);
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.knowledge-backlink a:hover {
+  text-decoration: underline;
+}
+
+.kn-trash-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 10px 12px;
+  border: 1px solid var(--amber-soft);
+  border-radius: var(--radius-sm);
+  background: var(--amber-soft);
+  color: var(--ink);
+  font-size: var(--text-11-5);
+}
+
+.kn-paper-foot {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px var(--kn-paper-inline) 16px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: var(--text-10-5);
+}
+
+.kn-save-state.is-saved {
+  color: var(--green);
+}
+
+.kn-save-state.is-saving {
+  color: var(--amber);
+}
+
+.kn-save-state.is-error {
+  color: var(--red);
+}
+
+.kn-editor-empty {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.kn-editor-empty > span {
+  font-size: var(--icon-empty);
+  opacity: 0.5;
+}
+
+.kn-editor-empty h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: var(--text-16);
+}
+
+.kn-editor-empty p {
+  margin: 0;
+  font-size: var(--text-11-5);
+}
+
+/* 右侧工具轨 + 信息面板 */
+
+.kn-rail {
+  position: relative;
+  z-index: var(--z-rail, 10);
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 3px;
+  overflow: auto;
+  border-left: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.kn-rail-group {
+  display: flex;
+  width: 100%;
+  flex: none;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.kn-rail-title {
+  padding: 6px 4px 2px;
+  color: var(--muted);
+  font-size: var(--text-9-5);
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
+.kn-rail button {
+  display: flex;
+  width: 42px;
+  height: 44px;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border-radius: var(--radius-8);
+  color: var(--muted);
+  font-size: var(--text-14);
+}
+
+.kn-rail button:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.kn-rail button.is-active {
+  background: var(--blue-soft);
+  color: var(--blue-ink);
+}
+
+.kn-rail button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.kn-rail-caption {
+  font-size: var(--text-9-5);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* 9 项分三组：视图与样式 / 面板 / 专注与输出。 */
+.kn-rail-separator {
+  width: calc(100% - 16px);
+  height: 1px;
+  flex: none;
+  margin: 3px 8px;
+  background: var(--line);
+}
+
+.kn-rail.is-collapsed .kn-rail-separator {
+  display: none;
+}
+
+.kn-rail-toggle {
+  width: 42px !important;
+  height: var(--control-h-sm) !important;
+  margin-bottom: 3px;
+  border-bottom: 1px solid var(--line) !important;
+  border-radius: var(--radius-6) !important;
+  color: var(--muted);
+  font-size: var(--text-12) !important;
+}
+
+.kn-editor.is-rail-collapsed {
+  --kn-rail-w: 32px;
+  grid-template-columns: minmax(0, 1fr) var(--kn-rail-w);
+}
+
+.kn-editor.is-narrow {
+  --kn-rail-w: 0px;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.kn-editor.is-rail-collapsed .kn-rail {
+  padding-inline: 2px;
+}
+
+.kn-rail.is-collapsed .kn-rail-group {
+  display: none;
+}
+
+.kn-rail.is-collapsed button:not(.kn-rail-toggle) {
+  display: none;
+}
+
+.kn-rail.is-collapsed .kn-rail-toggle {
+  width: 26px !important;
+}
+
+/* ≤900 工具抽屉：右栏不消失，9 项从这里进入。 */
+.kn-tools-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-drawer-scrim, 900);
+  background: var(--scrim);
+}
+
+.kn-tools-drawer {
+  position: fixed;
+  inset: 0 0 0 auto;
+  z-index: var(--z-drawer, 910);
+  display: flex;
+  width: min(260px, 92vw);
+  flex-direction: column;
+  border-left: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.kn-drawer-head {
+  display: flex;
+  min-height: 52px;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.kn-drawer-head h2 {
+  margin: 0;
+  flex: 1;
+  color: var(--ink);
+  font-size: var(--text-13);
+  font-weight: var(--weight-semibold);
+}
+
+.kn-drawer-head h2:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+.kn-drawer-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px;
+  overflow: auto;
+}
+
+.kn-drawer-row {
+  display: flex;
+  width: 100%;
+  height: 40px;
+  flex: none;
+  align-items: center;
+  gap: 10px;
+  padding: 0 10px;
+  border-radius: var(--radius-8);
+  color: var(--ink);
+  font-size: var(--text-12-5);
+  text-align: left;
+}
+
+.kn-drawer-row:hover:not(:disabled) {
+  background: var(--surface-3);
+}
+
+.kn-drawer-row.is-active {
+  background: var(--blue-soft);
+  color: var(--blue-ink);
+}
+
+.kn-drawer-row:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.kn-drawer-icon {
+  display: inline-flex;
+  width: 18px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+}
+
+.kn-drawer-row.is-active .kn-drawer-icon {
+  color: var(--blue-ink);
+}
+
+.kn-drawer-label {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kn-drawer-state {
+  flex: none;
+  color: var(--muted);
+  font-size: var(--text-10-5);
+}
+
+.kn-drawer-separator {
+  height: 1px;
+  flex: none;
+  margin: 6px 10px;
+  background: var(--line);
+}
+
+/*
+ * 右栏浮窗（ZX8-RAILPOP-01）：fixed 锚定视口右缘，右缘贴右栏左缘。
+ * 不用 absolute：正文有内部滚动容器，absolute 会随滚动漂移/被裁切。
+ * 不用 right:0：那会盖住右栏 9 项；right 必须包含右栏宽度。
+ */
+.kn-info {
+  position: fixed;
+  top: var(--kn-flyout-top);
+  right: calc(var(--kn-rail-w) + 1px);
+  z-index: var(--z-rail-flyout, 340);
+  display: flex;
+  width: var(--kn-flyout-w);
+  max-width: calc(100vw - var(--kn-rail-w) - 16px);
+  max-height: calc(100dvh - var(--kn-flyout-top) - 12px);
+  min-height: 0;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 13px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-12);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.kn-info-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kn-info-head h3 {
+  margin: 0;
+  color: var(--ink);
+  font-size: var(--text-12-5);
+  font-weight: 700;
+}
+
+.kn-info-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin: 0;
+}
+
+.kn-info-list > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.kn-info-list dt {
+  color: var(--muted);
+  font-size: var(--text-9-5);
+}
+
+.kn-info-list dd {
+  margin: 0;
+  color: var(--ink);
+  font-size: var(--text-11);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.kn-info-list a {
+  color: var(--blue-ink);
+  font-weight: 600;
+}
+
+.kn-info-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.kn-panel-hint,
+.kn-panel-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-10-5);
+  line-height: 1.7;
+}
+
+.kn-panel-note {
+  padding-top: 2px;
+  font-size: var(--text-9-5);
+  opacity: 0.85;
+}
+
+.kn-panel-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* 笔记链接：列表 / 关系图两个视图 */
+.kn-links-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-8);
+  background: var(--surface-2);
+}
+
+.kn-links-tabs button {
+  height: 26px;
+  border-radius: var(--radius-6);
+  color: var(--muted);
+  font-size: var(--text-10-5);
+  font-weight: 650;
+}
+
+.kn-links-tabs button:hover {
+  color: var(--ink);
+}
+
+.kn-links-tabs button.is-active {
+  background: var(--surface);
+  color: var(--blue-ink);
+  box-shadow: var(--shadow-sm);
+}
+
+/* 关系图沿用同一浮窗锚点，只加宽；浮层不参与正文列宽计算。 */
+.kn-editor-content.has-panel.is-graph {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.kn-info.is-graph {
+  width: min(340px, calc(100vw - var(--kn-rail-w) - 16px));
+}
+
+.kn-graph-view {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.kn-graph-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.kn-graph-filter,
+.kn-graph-zoom {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-8);
+  background: var(--surface-2);
+}
+
+.kn-graph-filter button,
+.kn-graph-zoom button {
+  min-width: 28px;
+  height: 24px;
+  padding: 0 5px;
+  border-radius: var(--radius-6);
+  color: var(--muted);
+  font-size: var(--text-10);
+  font-weight: 600;
+}
+
+.kn-graph-filter button:hover,
+.kn-graph-zoom button:hover {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.kn-graph-filter button.is-active {
+  background: var(--surface);
+  color: var(--blue-ink);
+}
+
+.kn-graph-reset {
+  font-size: var(--text-9-5) !important;
+}
+
+.kn-graph-stats {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-9-5);
+  line-height: 1.5;
+}
+
+.kn-graph-canvas {
+  display: block;
+  width: 100%;
+  height: 360px;
+  flex: none;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-10);
+  background:
+    radial-gradient(circle at 1px 1px, var(--line) 1px, transparent 0)
+    0 0 / 16px 16px,
+    var(--surface);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.kn-graph-canvas.is-panning {
+  cursor: grabbing;
+}
+
+.kn-graph-edge {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1.4;
+  opacity: 0.72;
+  pointer-events: none;
+}
+
+.kn-graph-edge.is-broken {
+  stroke: var(--red);
+  stroke-dasharray: 4 3;
+  opacity: 0.8;
+}
+
+.kn-graph-node {
+  cursor: pointer;
+  outline: none;
+}
+
+.kn-graph-node:focus-visible .kn-graph-node-dot {
+  stroke: var(--focus-ring);
+  stroke-width: 2.5;
+}
+
+.kn-graph-node-dot {
+  fill: var(--surface);
+  stroke: var(--line-strong);
+  stroke-width: 1.4;
+  transition: fill 120ms ease;
+}
+
+.kn-graph-node:hover .kn-graph-node-dot {
+  fill: var(--blue-soft);
+}
+
+.kn-graph-node.is-root .kn-graph-node-dot {
+  fill: var(--blue);
+  stroke: var(--blue-ink);
+  stroke-width: 1.5;
+}
+
+.kn-graph-root-ring {
+  fill: none;
+  stroke: var(--blue);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  opacity: 0.65;
+}
+
+.kn-graph-node.is-isolated .kn-graph-node-dot {
+  fill: var(--surface-2);
+  stroke: var(--muted);
+  stroke-dasharray: 3 2;
+}
+
+.kn-graph-node.is-broken {
+  cursor: default;
+}
+
+.kn-graph-node.is-broken .kn-graph-node-dot {
+  fill: var(--surface-2);
+  stroke: var(--red);
+  stroke-dasharray: 3 2;
+}
+
+.kn-graph-label {
+  fill: var(--ink);
+  font-size: var(--text-9-5);
+  font-weight: 600;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.kn-graph-node.is-root .kn-graph-label {
+  fill: var(--blue-ink);
+}
+
+.kn-graph-node.is-broken .kn-graph-label {
+  fill: var(--red);
+}
+
+.kn-graph-badge {
+  fill: var(--muted);
+  font-size: var(--text-9-5);
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.kn-graph-node.is-root .kn-graph-badge {
+  fill: var(--blue-ink);
+}
+
+.kn-graph-node.is-broken .kn-graph-badge {
+  fill: var(--red);
+}
+
+.kn-graph-state {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 14px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-10);
+  background: var(--surface-2);
+}
+
+.kn-graph-state h4 {
+  margin: 0;
+  color: var(--ink);
+  font-size: var(--text-11);
+}
+
+.kn-graph-state p,
+.kn-graph-empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-10);
+  line-height: 1.65;
+}
+
+.kn-graph-empty {
+  padding: 9px 10px;
+  border-left: 2px solid var(--blue);
+  border-radius: var(--radius-6);
+  background: var(--blue-soft);
+  color: var(--blue-ink);
+}
+
+.kn-graph-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  color: var(--muted);
+  font-size: var(--text-9-5);
+}
+
+.kn-graph-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.kn-graph-legend i {
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-circle);
+  background: var(--surface);
+}
+
+.kn-graph-legend i.is-current {
+  border-color: var(--blue-ink);
+  background: var(--blue);
+}
+
+.kn-graph-legend i.is-isolated {
+  border-style: dashed;
+  background: var(--surface-2);
+}
+
+.kn-graph-legend i.is-broken {
+  border-color: var(--red);
+  border-style: dashed;
+  background: var(--surface-2);
+}
+
+.kn-graph-scope {
+  margin-top: auto;
+}
+
+.kn-outline-list,
+.kn-attachment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.kn-panel-item {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  padding: 7px 9px;
+  border-radius: var(--radius-8);
+  color: var(--ink);
+  font-size: var(--text-10-5);
+  line-height: 1.5;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kn-panel-item:hover {
+  background: var(--surface-2);
+  color: var(--blue-ink);
+}
+
+.kn-outline-item {
+  color: var(--muted);
+}
+
+.kn-panel-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kn-panel-section h4 {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-9-5);
+  font-weight: 650;
+  letter-spacing: 0.04em;
+}
+
+.kn-attachment-list li {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 1px;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-8);
+  background: var(--surface-2);
+}
+
+.kn-attachment-name {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: var(--text-10-5);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kn-attachment-meta {
+  color: var(--muted);
+  font-size: var(--text-9-5);
+}
+
+.kn-attachment-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.kn-attachment-body h4 {
+  margin: 0;
+  color: var(--ink);
+  font-size: var(--text-11-5);
+  font-weight: 700;
+}
+
+/* 右栏宽度有限：附件面板内边距收紧，卡片操作换行不溢出。 */
+.kn-info .zx-attach-panel {
+  padding: 10px;
+  gap: 9px;
+  border: none;
+  background: transparent;
+}
+
+.kn-info .zx-attach-head {
+  align-items: flex-start;
+}
+
+.kn-info .zx-attach-card {
+  flex-wrap: wrap;
+  padding: 9px;
+}
+
+.kn-info .zx-attach-actions {
+  justify-content: flex-start;
+}
+
+/* ------------------------------------------------------------------ */
+/* 右键菜单 / 模态 / 提示                                               */
+/* ------------------------------------------------------------------ */
+
+.kn-context-menu {
+  position: fixed;
+  /* 与编辑器/画板共用同一层级 token：菜单 < 上下文菜单 < 模态。 */
+  z-index: var(--z-menu, 420);
+  width: min(248px, calc(100vw - 16px));
+  max-width: calc(100vw - 16px);
+  max-height: min(440px, calc(100dvh - 16px));
+  padding: 5px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-popover);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+/* 子菜单只比父菜单高一层；编辑器 .zxe-context-menu 同样落到 600。 */
+.kn-context-submenu {
+  z-index: calc(var(--z-context, 600) + 1);
+}
+
+.kn-menu-item {
+  display: flex;
+  width: 100%;
+  min-height: 30px;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: var(--radius-6);
+  color: var(--ink);
+  font-size: var(--text-11-5);
+  text-align: left;
+}
+
+.kn-menu-item:hover,
+.kn-menu-item:focus-visible {
+  outline: none;
+  background: var(--surface-2);
+}
+
+.kn-menu-item:focus-visible {
+  box-shadow: 0 0 0 2px var(--focus-ring) inset;
+}
+
+.kn-menu-item.is-danger {
+  color: var(--red);
+}
+
+.kn-menu-item:disabled,
+.kn-menu-item[aria-disabled='true'] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.kn-menu-item[aria-checked='true'] .kn-menu-label,
+.kn-menu-item[aria-pressed='true'] .kn-menu-label {
+  color: var(--blue-ink);
+  font-weight: 600;
+}
+
+.kn-menu-icon {
+  width: 16px;
+  flex: none;
+  color: var(--muted);
+  text-align: center;
+}
+
+.kn-menu-item.is-danger .kn-menu-icon {
+  color: var(--red);
+}
+
+.kn-menu-label {
+  min-width: 0;
+  flex: 1;
+}
+
+.kn-menu-shortcut {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-9-5);
+  white-space: nowrap;
+}
+
+.kn-menu-arrow,
+.kn-menu-check {
+  color: var(--muted);
+  font-size: var(--text-9-5);
+  line-height: 1;
+}
+
+.kn-menu-item[aria-checked='true'] .kn-menu-check {
+  color: var(--blue-ink);
+}
+
+.kn-menu-heading {
+  padding: 7px 8px 3px;
+  color: var(--muted);
+  font-size: var(--text-9-5);
+  font-weight: 650;
+  letter-spacing: 0.04em;
+}
+
+.kn-menu-divider {
+  height: 1px;
+  margin: 4px 6px;
+  background: var(--line);
+}
+
+.kn-modal-copy {
+  margin: 8px 0 16px;
+  color: var(--muted);
+  font-size: var(--text-11-5);
+  line-height: 1.7;
+}
+
+.kn-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 12px;
+}
+
+.kn-field > span {
+  color: var(--muted);
+  font-size: var(--text-10-5);
+  font-weight: 600;
+}
+
+.kn-field input,
+.kn-field select {
+  width: 100%;
+  height: var(--control-h);
+  min-height: var(--control-h);
+  padding: 0 var(--space-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-button);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--text-control);
+}
+
+.kn-field input:focus,
+.kn-field select:focus {
+  border-color: var(--focus-ring);
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.kn-field-error {
+  margin: -4px 0 12px;
+  color: var(--red);
+  font-size: var(--text-10-5);
+}
+
+.kn-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 7px;
+  margin-top: 16px;
+}
+
+/* 共享 Modal 的 footer 已负责布局，操作行不再叠加顶部间距。 */
+.zx-modal-foot .kn-modal-actions {
+  margin-top: 0;
+}
+
+.kn-toast {
+  position: fixed;
+  bottom: 22px;
+  left: 50%;
+  z-index: var(--z-toast, 800);
+  max-width: min(88vw, 440px);
+  padding: 8px 14px;
+  border-radius: var(--radius-popover);
+  background: var(--ink);
+  color: var(--surface);
+  font-size: var(--text-11-5);
+  line-height: 1.5;
+  transform: translateX(-50%);
+  box-shadow: var(--shadow);
+}
+
+.kn-toast.is-error {
+  background: var(--red);
+  color: var(--on-danger);
+}
+
+/* ------------------------------------------------------------------ */
+/* 响应式：桌面优先，逐级收起目录树/信息面板                             */
+/* ------------------------------------------------------------------ */
+
+@media (max-width: 1179px) {
+  .kn-workspace {
+    grid-template-columns: 186px 248px minmax(0, 1fr);
+  }
+
+  .kn-editor {
+    --kn-rail-w: 36px;
+    --kn-flyout-w: clamp(236px, 26vw, 320px);
+    grid-template-columns: minmax(0, 1fr) var(--kn-rail-w);
+  }
+
+  .kn-rail {
+    padding-inline: 2px;
+  }
+
+  .kn-rail button {
+    width: 32px;
+    height: 34px;
+  }
+
+  .kn-rail-toggle {
+    width: 32px !important;
+  }
+
+  .kn-rail-title {
+    padding-inline: 2px;
+    font-size: var(--text-9-5);
+  }
+
+  .kn-rail-caption {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  /* 右栏改为命令栏「工具」抽屉：9 项仍可用，面板走右侧 sheet，不挤占正文。 */
+  .kn-editor {
+    --kn-rail-w: 0px;
+  }
+
+  .kn-editor-content.has-panel,
+  .kn-editor-content.has-panel.is-graph {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .kn-info {
+    position: fixed;
+    inset: 0 0 0 auto;
+    z-index: var(--z-rail-flyout, 340);
+    width: min(320px, 88vw);
+    max-width: 88vw;
+    max-height: none;
+    height: 100dvh;
+    border-block: 0;
+    border-right: 0;
+    border-radius: 0;
+    box-shadow: var(--shadow);
+  }
+
+  .kn-info.is-graph {
+    width: min(340px, 92vw);
+    max-width: 92vw;
+  }
+
+  .kn-commandbar {
+    padding-inline: 8px;
+  }
+
+  .kn-cmd-button {
+    width: 34px;
+    padding: 0;
+  }
+
+  .kn-cmd-text,
+  .kn-cmd-caret {
+    display: none;
+  }
+}
+
+@media (max-width: 390px) {
+  .kn-drawer-row {
+    height: 44px;
+  }
+}
+
+@media (max-width: 980px) {
+  .kn-workspace {
+    grid-template-columns: 238px minmax(0, 1fr);
+  }
+
+  /* 目录已隐藏：展开只收 238px 列表，编辑区占满，右栏 36px 保留。 */
+  .kn-workspace.is-expanded {
+    grid-template-columns: 0 minmax(0, 1fr);
+  }
+
+  .kn-tree {
+    display: none;
+  }
+
+  .kn-paper {
+    --kn-paper-inline: 24px;
+  }
+}
+
+@media (max-width: 720px) {
+  .kn-workspace,
+  .kn-workspace.is-expanded {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .kn-list {
+    display: none;
+  }
+
+  .kn-editor-content.has-panel {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* 窄屏 sheet 已由 ≤900 规则建立 fixed 定位，这里只调宽度。 */
+  .kn-info {
+    width: min(320px, 92vw);
+    max-width: 92vw;
+  }
+
+  .kn-info.is-graph {
+    width: min(340px, 94vw);
+    max-width: 94vw;
+  }
+
+  .kn-graph-canvas {
+    height: min(52vh, 360px);
+  }
+
+  .kn-rail button {
+    width: 30px;
+  }
+
+  .kn-paper {
+    --kn-paper-inline: 16px;
+  }
+
+  .kn-paper-head {
+    padding-top: 18px;
+  }
+
+  .kn-block-editor .zxe-body {
+    padding-inline: 16px;
+    padding-bottom: 48px;
+  }
+
+  .kn-block-editor .zxt-summary {
+    padding-inline: 16px;
+  }
+}
+
+/* -------------------------------------------------------------------------
+ * 笔记导入（ZX-IO-04）
+ * ---------------------------------------------------------------------- */
+
+.kn-list-head-actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 7px;
+}
+
+.kn-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 18px 8px;
+}
+
+.kn-empty-state .kn-empty {
+  margin: 0;
+}
+
+.kn-import-modal {
+  width: min(720px, 96vw);
+}
+
+.kn-import-picker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.kn-import-picker .kn-secondary-button {
+  cursor: pointer;
+}
+
+.kn-import-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.kn-import-hint {
+  color: var(--muted);
+  font-size: var(--text-10-5);
+}
+
+.kn-import-controls {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+}
+
+.kn-import-fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0 0 12px;
+  padding: 0;
+  border: 0;
+  color: var(--muted);
+  font-size: var(--text-10-5);
+}
+
+.kn-import-fieldset legend {
+  margin-bottom: 4px;
+  padding: 0;
+  font-weight: 600;
+}
+
+.kn-import-fieldset label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--ink);
+  font-size: var(--text-11-5);
+}
+
+.kn-import-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 280px;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  list-style: none;
+}
+
+.kn-import-item {
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-button);
+  background: var(--surface-2);
+}
+
+.kn-import-item.is-failed {
+  border-color: color-mix(in srgb, var(--red) 35%, var(--line));
+}
+
+.kn-import-item.is-imported {
+  border-color: color-mix(in srgb, var(--green) 35%, var(--line));
+}
+
+.kn-import-item-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.kn-import-item-head strong {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: var(--text-11-5);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kn-import-item-head span {
+  flex: none;
+  color: var(--muted);
+  font-size: var(--text-10-5);
+}
+
+.kn-import-item-meta,
+.kn-import-item-title {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: var(--text-10-5);
+}
+
+.kn-import-item-title {
+  color: var(--ink);
+}
+
+.kn-import-item-warning {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: var(--text-10-5);
+}
+
+.kn-import-warnings {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: var(--text-10-5);
+  line-height: 1.5;
+}
+
+.kn-import-summary {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-button);
+  background: var(--surface-2);
+}
+
+.kn-import-summary h3 {
+  margin: 0 0 4px;
+  color: var(--ink);
+  font-size: var(--text-11-5);
+}
+
+.kn-import-summary p {
+  margin: 0;
+  color: var(--ink);
+  font-size: var(--text-11-5);
+}
+
+.kn-import-opened {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.kn-import-opened li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: var(--text-11-5);
+}
+
+/* 加密笔记锁定态：不挂载编辑器，避免空正文覆盖密文（ZX11-PRIVACY-ENC-01） */
+.kn-locked-note {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 560px;
+  margin: 48px auto;
+  padding: 28px 30px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-12);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.kn-locked-note-icon {
+  font-size: var(--text-24);
+  line-height: 1;
+}
+
+.kn-locked-note h3 {
+  margin: 0;
+  color: var(--ink);
+  font-size: var(--text-16);
+}
+
+.kn-locked-note p {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-12-5);
+  line-height: 1.65;
+}
+
+.kn-locked-note .kn-primary-button {
+  text-decoration: none;
+}

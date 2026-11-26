@@ -1,0 +1,411 @@
+/* 附件面板与图片块。只使用全局 design token，不引入新的主色。 */
+
+.zx-attach-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.zx-attach-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.zx-attach-head h3 {
+  margin: 0;
+  font-size: var(--text-16);
+  color: var(--ink);
+}
+
+.zx-attach-head p {
+  margin: 2px 0 0;
+  font-size: var(--text-caption);
+  color: var(--muted);
+}
+
+.zx-attach-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.zx-attach-consent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius-10);
+  background: var(--amber-soft);
+  color: var(--ink);
+  font-size: var(--text-caption);
+  line-height: 1.5;
+}
+
+.zx-attach-consent input {
+  accent-color: var(--accent);
+}
+
+.zx-attach-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.zx-attach-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface-2);
+}
+
+.zx-attach-card[data-status='available'] {
+  border-color: color-mix(in srgb, var(--green) 35%, var(--line));
+}
+
+.zx-attach-card[data-status='failed'] {
+  border-color: color-mix(in srgb, var(--red) 40%, var(--line));
+}
+
+.zx-attach-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 36px;
+  height: 36px;
+  border-radius: var(--radius-10);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: var(--text-11);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.zx-attach-main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.zx-attach-title-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.zx-attach-name {
+  color: var(--ink);
+  font-size: var(--text-13);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.zx-attach-meta,
+.zx-attach-hint {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: var(--text-11-5);
+}
+
+.zx-attach-hint {
+  color: var(--amber);
+}
+
+.zx-attach-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-11);
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.zx-attach-status.is-neutral {
+  background: var(--surface-3);
+  color: var(--muted);
+}
+
+.zx-attach-status.is-warn {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+.zx-attach-status.is-active {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+.zx-attach-status.is-ok {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.zx-attach-status.is-danger {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.zx-attach-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.zx-attach-button {
+  appearance: none;
+  display: inline-flex;
+  height: var(--control-h);
+  align-items: center;
+  justify-content: center;
+  gap: var(--icon-gap);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-button);
+  background: var(--surface);
+  color: var(--ink);
+  padding: 0 var(--control-pad-x);
+  font-size: var(--text-control);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition: background var(--motion-fast), border-color var(--motion-fast);
+}
+
+.zx-attach-button:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.zx-attach-button:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.zx-attach-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.zx-attach-button.is-primary {
+  background: var(--accent);
+  border-color: transparent;
+  color: var(--on-accent);
+  font-weight: var(--weight-semibold);
+}
+
+.zx-attach-button.is-primary:hover:not(:disabled) {
+  color: var(--on-accent);
+  filter: brightness(0.94);
+}
+
+.zx-attach-button.is-danger {
+  color: var(--red);
+  border-color: var(--line-strong);
+}
+
+.zx-attach-button.is-danger:hover:not(:disabled) {
+  border-color: var(--red);
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.zx-attach-progress {
+  position: relative;
+  height: 4px;
+  margin-top: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-3);
+  overflow: hidden;
+}
+
+.zx-attach-progress span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--accent);
+  transition: width var(--motion-fast);
+}
+
+.zx-attach-error {
+  margin: 6px 0 0;
+  color: var(--red);
+  font-size: var(--text-caption);
+  line-height: 1.5;
+}
+
+.zx-attach-empty {
+  margin: 0;
+  padding: 18px 12px;
+  text-align: center;
+  color: var(--muted);
+  font-size: var(--text-caption);
+  background: var(--surface-2);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-10);
+}
+
+.zx-attach-hash {
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: var(--text-10-5);
+  overflow-wrap: anywhere;
+  word-break: break-all;
+  color: var(--muted);
+}
+
+.zx-attach-notice {
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-10);
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: var(--text-caption);
+  line-height: 1.5;
+}
+
+.zx-attach-notice b {
+  color: var(--ink);
+}
+
+.zx-attach-state {
+  margin: 0;
+  padding: 12px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-10);
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: var(--text-caption);
+  line-height: 1.6;
+}
+
+.zx-attach-state.is-error {
+  border-color: color-mix(in srgb, var(--red) 40%, var(--line));
+  color: var(--red);
+}
+
+.zx-attach-state .zx-attach-button {
+  margin-left: 8px;
+}
+
+.zx-attach-preview {
+  position: fixed;
+  inset: 0;
+  z-index: 320;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: color-mix(in srgb, var(--ink) 55%, transparent);
+}
+
+.zx-attach-preview-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: min(860px, 92vw);
+  max-height: 88vh;
+  padding: 14px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.zx-attach-preview-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--ink);
+  font-size: var(--text-13);
+}
+
+.zx-attach-preview-card img {
+  display: block;
+  max-width: 100%;
+  max-height: 70vh;
+  margin: 0 auto;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+
+.zx-attach-image {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.zx-attach-image img {
+  display: block;
+  max-width: 100%;
+  max-height: 520px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--surface-3);
+  object-fit: contain;
+}
+
+.zx-attach-image figcaption {
+  color: var(--muted);
+  font-size: var(--text-11-5);
+}
+
+.zx-attach-image-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  padding: 18px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+.zx-attach-image-placeholder > span {
+  font-size: var(--text-11);
+  font-weight: 700;
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+}
+
+.zx-attach-image-placeholder b {
+  color: var(--ink);
+  font-size: var(--text-13);
+}
+
+.zx-attach-image-placeholder small {
+  font-size: var(--text-11-5);
+}
+
+.zx-attach-image-placeholder.is-error {
+  border-color: color-mix(in srgb, var(--red) 40%, var(--line));
+}
+
+@media (max-width: 720px) {
+  .zx-attach-card {
+    flex-wrap: wrap;
+  }
+
+  .zx-attach-actions {
+    width: 100%;
+    justify-content: flex-start;
+    padding-left: 48px;
+  }
+}

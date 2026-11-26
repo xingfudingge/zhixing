@@ -1,0 +1,504 @@
+/* OCR 设置与队列。沿用知行 design token。 */
+
+.zx-ocr {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+/* 设置页已经有 SettingsCard，内部面板不再套第二层卡片。 */
+.settings-card > .zx-ocr {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.settings-card > .zx-ocr .zx-ocr-head h2 {
+  font-size: 15px;
+}
+
+.zx-ocr-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.zx-ocr-head h2 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.zx-ocr-head p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+.zx-ocr-badge {
+  flex: 0 0 auto;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  background: var(--surface-3);
+  color: var(--muted);
+}
+
+.zx-ocr-badge.is-ok {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.zx-ocr-badge.is-warn {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+.zx-ocr-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.zx-ocr-toggle.is-small {
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+.zx-ocr-toggle input {
+  margin-top: 2px;
+  accent-color: var(--accent);
+}
+
+.zx-ocr-toggle span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.zx-ocr-toggle small {
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+.zx-ocr-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.zx-ocr-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.zx-ocr-field select,
+.zx-ocr-field input {
+  width: 100%;
+  padding: 7px 9px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.zx-ocr-field select:focus-visible,
+.zx-ocr-field input:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
+.zx-ocr-fieldset {
+  margin: 0;
+  padding: 9px 12px 11px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+
+.zx-ocr-fieldset legend {
+  padding: 0 4px;
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+.zx-ocr-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.zx-ocr-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  font-size: 12px;
+}
+
+.zx-ocr-radio {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  padding: 4px 0;
+  font-size: 12.5px;
+}
+
+.zx-ocr-radio small {
+  display: block;
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+.zx-ocr-custom {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+
+.zx-ocr-warn {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--amber-soft);
+  color: var(--amber);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.zx-ocr-status {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  font-size: 12.5px;
+}
+
+.zx-ocr-status-main {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.zx-ocr-status span {
+  color: var(--muted);
+}
+
+.zx-ocr-status small {
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+.zx-ocr-dest {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  font-size: 12px;
+}
+
+.zx-ocr-dest b {
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.zx-ocr-dest ul {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  flex-direction: column;
+  gap: 4px;
+  list-style: none;
+}
+
+.zx-ocr-dest li {
+  display: flex;
+  gap: 8px;
+  line-height: 1.55;
+}
+
+.zx-ocr-dest li span {
+  flex: 0 0 56px;
+  color: var(--muted);
+}
+
+.zx-ocr-dest li em {
+  color: var(--ink);
+  font-style: normal;
+}
+
+.zx-ocr-field-hint {
+  color: var(--muted);
+  font-size: 10.5px;
+  line-height: 1.5;
+}
+
+/* 附件卡 / 图片块内的 OCR 入口 */
+.zx-ocr-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--line);
+}
+
+.zx-ocr-entry-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+.zx-ocr-entry-actions small,
+.zx-ocr-entry-hint,
+.zx-ocr-entry-result small {
+  color: var(--muted);
+  font-size: 10.5px;
+  line-height: 1.5;
+}
+
+.zx-ocr-entry-hint {
+  margin: 0;
+}
+
+.zx-ocr-entry-result {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-2);
+}
+
+.zx-ocr-entry-result b {
+  color: var(--ink);
+  font-size: 11.5px;
+}
+
+.zx-ocr-entry-result p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.zx-ocr-entry-result pre {
+  margin: 0;
+  max-height: 180px;
+  overflow: auto;
+  padding: 8px;
+  border-radius: 7px;
+  background: var(--surface-3);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.zx-ocr-test {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.zx-ocr-test small {
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+.zx-ocr-file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.zx-ocr-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  padding: 6px 11px;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.zx-ocr-button:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.zx-ocr-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.zx-ocr-button.is-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+
+.zx-ocr-error {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--red-soft);
+  color: var(--red);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.zx-ocr-result {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+
+.zx-ocr-result header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.zx-ocr-result header span,
+.zx-ocr-result small {
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+.zx-ocr-result pre,
+.zx-ocr-jobs pre {
+  margin: 0;
+  max-height: 240px;
+  overflow: auto;
+  padding: 10px;
+  border-radius: 8px;
+  background: var(--surface-3);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.zx-ocr-queue {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.zx-ocr-queue > header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.zx-ocr-queue > header span {
+  flex: 1 1 auto;
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+.zx-ocr-empty {
+  margin: 0;
+  padding: 14px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+.zx-ocr-jobs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.zx-ocr-jobs li {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+
+.zx-ocr-jobs li[data-status='failed'] {
+  border-color: color-mix(in srgb, var(--red) 40%, var(--line));
+}
+
+.zx-ocr-jobs li > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.zx-ocr-jobs small {
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+.zx-ocr-jobs em {
+  color: var(--red);
+  font-size: 12px;
+  font-style: normal;
+}
+
+@media (max-width: 720px) {
+  .zx-ocr-grid {
+    grid-template-columns: 1fr;
+  }
+}

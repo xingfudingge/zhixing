@@ -1,0 +1,80 @@
+[package]
+name = "zhixing"
+version = "0.2.0"
+# 同时存在 src/main.rs（主程序）与 src/bin/zhixing-db.rs（维护 CLI）。
+# 不指定 default-run 时，`cargo run` / `tauri dev` 会因二义性直接失败。
+default-run = "zhixing"
+description = "知行 · 单用户个人任务与知识管理桌面应用"
+authors = ["Zhixing"]
+license = "MIT"
+edition = "2021"
+rust-version = "1.77.2"
+
+[lib]
+name = "zhixing_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+base32 = "0.4"
+# 笔记内容加密：成熟 RustCrypto 原语，不自研算法。
+# - scrypt：口令派生 KEK（RFC 7914，age 的口令 KDF 同族参数）；
+# - XChaCha20-Poly1305：AEAD（RFC 8439 扩展，24 字节随机 nonce）；
+# - keyring：macOS Keychain / Windows Credential Manager / Linux Secret Service；
+# - zeroize：解锁密钥离开作用域即清零。
+base64 = "0.22"
+chacha20poly1305 = "0.10"
+getrandom = "0.3"
+keyring = { version = "3.6", features = ["apple-native", "windows-native", "sync-secret-service"] }
+log = "0.4"
+open = "5"
+rusqlite = { version = "0.41", features = ["bundled"] }
+scrypt = "0.11"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+tauri = { version = "2", features = [] }
+zeroize = "1.8"
+tauri-plugin-clipboard-manager = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-log = "2"
+# 链接块外链统一交给系统默认浏览器/邮件客户端；只用插件默认 URL scope。
+tauri-plugin-opener = "~2.5.5"
+thiserror = "2"
+# ICS/日历只读订阅：WebView 的 fetch 受 CSP 与 CORS 限制（ZX12-AUDIT-01 R1/R2），
+# 由 Rust 侧发起受控 GET。ureq 使用 rustls+ring，跨平台且不依赖系统 OpenSSL。
+ureq = { version = "2.12", default-features = false, features = ["tls", "gzip"] }
+url = "2"
+
+# 收紧 umask（SQLite -wal/-shm、密钥信封默认 0600）；仅 Unix 目标使用。
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
+# 原生 OCR 只依赖 macOS Vision/ImageIO 的 Rust 绑定；其他平台不编译这些 crate。
+# 许可证：objc2 / objc2-* 系列均为 Zlib OR Apache-2.0 OR MIT。
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2 = "0.6"
+block2 = "0.6"
+objc2-core-foundation = { version = "0.3", features = ["CFData", "CFDictionary", "CFNumber", "CFString"] }
+objc2-core-graphics = { version = "0.3", features = ["CGImage"] }
+objc2-foundation = { version = "0.3", features = ["NSArray", "NSData", "NSDictionary", "NSDistributedNotificationCenter", "NSError", "NSEnumerator", "NSNotification", "NSObject", "NSOperation", "NSProcessInfo", "NSString"] }
+objc2-image-io = { version = "0.3", default-features = false, features = ["std", "CGImageSource", "objc2-core-graphics"] }
+objc2-vision = { version = "0.3.2", default-features = false, features = ["std", "VNRequest", "VNRequestHandler", "VNRecognizeTextRequest", "VNObservation", "VNTypes", "objc2-core-foundation", "objc2-core-graphics", "objc2-image-io"] }
+
+[dev-dependencies]
+# 命令层回归必须走真实 Tauri IPC 管线（参数反序列化、State 注入、错误序列化）。
+tauri = { version = "2", features = ["test"] }
+tempfile = "3"
+
+[features]
+# 生产构建时由 Tauri CLI 启用；不要删除。
+custom-protocol = ["tauri/custom-protocol"]
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true

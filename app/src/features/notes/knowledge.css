@@ -1,0 +1,189 @@
+/* 知识页 P0-05 最小闭环：笔记列表 + 阅读区 + 任务回链。 */
+
+.knowledge-page {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.knowledge-workspace {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+  gap: 14px;
+  min-width: 0;
+  align-items: start;
+}
+
+.knowledge-list {
+  display: flex;
+  min-width: 0;
+  max-height: calc(100vh - 210px);
+  flex-direction: column;
+  gap: 5px;
+  overflow: auto;
+  padding: 7px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.knowledge-list-item {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px 9px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  text-align: left;
+}
+
+.knowledge-list-item:hover {
+  background: var(--surface-2);
+}
+
+.knowledge-list-item.is-selected {
+  border-color: var(--line);
+  background: var(--blue-soft);
+}
+
+.knowledge-list-title {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.knowledge-list-meta {
+  color: var(--muted);
+  font-size: 9.5px;
+  line-height: 1.4;
+}
+
+.knowledge-list-source {
+  color: var(--blue-ink);
+  font-size: 9.5px;
+  line-height: 1.4;
+}
+
+.knowledge-note {
+  min-width: 0;
+  padding: 18px 20px 24px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.knowledge-note-head {
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.knowledge-note-head h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 19px;
+  font-weight: 680;
+  letter-spacing: -0.015em;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.knowledge-note-head p {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 10.5px;
+  line-height: 1.5;
+}
+
+.knowledge-backlink {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 7px 9px;
+  border-radius: 8px;
+  background: var(--blue-soft);
+  color: var(--muted);
+  font-size: 10.5px;
+}
+
+.knowledge-backlink span {
+  font-weight: 600;
+}
+
+.knowledge-backlink a {
+  color: var(--blue-ink);
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.knowledge-backlink a:hover {
+  text-decoration: underline;
+}
+
+.knowledge-note-body {
+  margin-top: 14px;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+
+.knowledge-note-body h2 {
+  margin: 18px 0 6px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 680;
+}
+
+.knowledge-note-body h2:first-child {
+  margin-top: 0;
+}
+
+.knowledge-note-body p {
+  margin: 0 0 9px;
+}
+
+.knowledge-note-body ul {
+  margin: 0 0 9px;
+  padding-left: 20px;
+}
+
+.knowledge-note-body a {
+  color: var(--blue-ink);
+}
+
+.knowledge-note-body .callout,
+.knowledge-note-body .zx-task-backlink {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0 0 14px;
+  padding: 8px 10px;
+  border-left: 3px solid var(--blue);
+  border-radius: 0 8px 8px 0;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+.knowledge-note-body .zx-task-backlink p {
+  margin: 0;
+}
+
+@media (max-width: 860px) {
+  .knowledge-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .knowledge-list {
+    max-height: 240px;
+  }
+}

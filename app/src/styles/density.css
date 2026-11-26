@@ -1,0 +1,100 @@
+/*
+ * P1-05 密度与编辑器阅读偏好。
+ *
+ * `<html>` 上的 `--editor-*` 变量与 `data-editor-*` 由
+ * `features/settings/runtime.ts` 写入；本文件只消费这些值。
+ * 不在这里定义第二套主色，语义色仍来自 tokens.css。
+ */
+
+:root {
+  --editor-font-size: 14.5px;
+  --editor-paragraph-gap: 8px;
+  --editor-indent: 0em;
+  --editor-width: 860px;
+  --editor-ink: var(--ink);
+}
+
+/* 编辑区宽度。专注模式仍使用编辑器自己的 760px 阅读宽度。 */
+.zxe:not(.zxe--focus) .zxe-body {
+  padding-inline: max(28px, calc((100% - var(--editor-width)) / 2)) !important;
+}
+
+/* 正文字号与正文默认色：只作用于正文类文本，不改标题层级。 */
+.zxe :is(.zxe-paragraph, .zxe-todo-text, .zxe-list-text, .zxe-quote-text) {
+  font-size: var(--editor-font-size);
+  color: var(--editor-ink);
+}
+
+/* 段落间距与首行缩进。 */
+.zxe .zxe-paragraph {
+  margin-block: calc(var(--editor-paragraph-gap) / 2);
+  text-indent: var(--editor-indent);
+}
+
+/* 已完成的待办保持弱化，不跟随正文默认色。 */
+.zxe .zxe-todo.is-done .zxe-todo-text {
+  color: var(--muted);
+}
+
+/* 关闭块图标后，悬停不再出现 ＋ / ⠿。 */
+:root[data-editor-block-icons='off'] .zxe .zxe-block-control {
+  display: none;
+}
+
+/* ---------- 紧凑密度 ---------- */
+
+:root[data-density='compact'] .task-row {
+  gap: 7px;
+  padding: 5px 9px;
+}
+
+:root[data-density='compact'] .task-row-body {
+  gap: 1px;
+}
+
+:root[data-density='compact'] .task-title {
+  font-size: 12px;
+}
+
+:root[data-density='compact'] .task-meta {
+  font-size: 9.5px;
+}
+
+:root[data-density='compact'] .task-check {
+  width: 16px;
+  height: 16px;
+}
+
+:root[data-density='compact'] .task-list {
+  gap: 5px;
+}
+
+:root[data-density='compact'] .kn-note-row,
+:root[data-density='compact'] .kn-note-open {
+  min-height: 46px;
+}
+
+:root[data-density='compact'] .kn-note-open {
+  gap: 2px;
+  padding: 6px 58px 5px 9px;
+}
+
+:root[data-density='compact'] .calendar-month-grid {
+  grid-auto-rows: minmax(84px, 1fr);
+}
+
+:root[data-density='compact'] .calendar-cell {
+  gap: 1px;
+  padding: 4px 6px 5px;
+}
+
+:root[data-density='compact'] .calendar-day-number {
+  width: 18px;
+  height: 18px;
+}
+
+/* 密度变化也作用于任务详情里的关联卡片，避免只在列表生效。 */
+:root[data-density='compact'] .task-note-card {
+  gap: 1px;
+  padding: 5px 7px;
+}
