@@ -117,7 +117,7 @@ export function createDbClient(invoker: DbInvoker = tauriInvoker) {
     system: {
       status: () => call<DbStatus>('db_status'),
       migrate: () => call<DbStatus>('db_migrate'),
-      /** 同一事务内清空业务表并重新执行种子；偏好/许可保留。 */
+      /** 同一事务内清空业务表并重新执行种子；偏好保留。 */
       resetDomain: () => call<ResetDomainReport>('db_reset_domain'),
     },
 

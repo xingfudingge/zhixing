@@ -272,7 +272,7 @@ Running `target/debug/zhixing`
 - **没有完整业务 schema**：当前只有 `app_meta` 与 `schema_migrations`；P0-03 负责业务表与仓储。
 - 不引入账号、登录、成员、席位、协作、AI、路由守卫。
 - 不复制 `outputs/知行-前端原型-v1.html` 作为正式 UI；不改 `outputs/` 下的原型与设计文档。
-- 不写 localStorage 作为权威库；不实现同步/WebDAV/backend、许可验签、OCR、系统通知。
+- 不写 localStorage 作为权威库；不实现同步/WebDAV/backend、OCR、系统通知。
 - `tauri build` 产物只有链接器 ad-hoc 签名，未做 Developer ID 签名与公证；macOS 首次打开可能需要右键「打开」。
 - 当前 `BrowserRouter` 在 Tauri 生产环境刷新深链的兼容方案由 P0-02 路由卡统一收口；本卡验收只看 dev 空壳。
 
